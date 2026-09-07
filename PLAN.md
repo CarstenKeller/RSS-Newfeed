@@ -28,22 +28,31 @@ diese Datei + nächster offener Schritt).
 
 ## Iteration 1 – MVP (vollständig nutzbare Basisfunktionen)
 
-- [ ] Projekt-Grundgerüst (Gradle, Compose, Room, WorkManager, Navigation)
-- [ ] Debug-Signing-Konfiguration fix (konsistenter Keystore für Update-Erkennung)
-- [ ] Datenmodell: FeedSource, Article (Room-Entities + DAO)
-- [ ] RSS/Atom-Parser (Titel, Bild, Zusammenfassung, Volltext falls vorhanden,
-      Herausgeber, Datum, Link, Kategorie)
-- [ ] Feed-Verwaltung: Hinzufügen/Bearbeiten/Entfernen von Feed-URLs
-- [ ] Feed-Refresh: manuell (Pull-to-Refresh) + periodisch im Hintergrund
-- [ ] Artikel-Liste: chronologisch (neueste zuerst), Bild + Titel + max.
+Stand Build 1: Alle Punkte sind implementiert und der CI-Build kompiliert und
+signiert die APK erfolgreich. Was das NICHT abdeckt: einen manuellen Test auf
+einem echten Gerät/Emulator (dazu fehlt in dieser Sandbox die Möglichkeit) –
+insbesondere das Edge-to-edge-Verhalten und das RSS-Parsing gegen echte Feeds
+solltest du beim ersten Start prüfen und mir rückmelden.
+
+- [x] Projekt-Grundgerüst (Gradle, Compose, Room, WorkManager, Navigation)
+- [x] Debug-Signing-Konfiguration fix (konsistenter Keystore für Update-Erkennung)
+- [x] Datenmodell: FeedSource, Article (Room-Entities + DAO)
+- [x] RSS/Atom-Parser (Titel, Bild, Zusammenfassung, Volltext falls vorhanden,
+      Herausgeber, Datum, Link, Kategorie) – kompiliert, noch nicht gegen
+      echte Feeds auf einem Gerät getestet
+- [x] Feed-Verwaltung: Hinzufügen/Bearbeiten/Entfernen von Feed-URLs
+- [x] Feed-Refresh: manuell (Pull-to-Refresh) + periodisch im Hintergrund
+- [x] Artikel-Liste: chronologisch (neueste zuerst), Bild + Titel + max.
       2-zeilige Zusammenfassung + Herausgeber
-- [ ] Artikel-Detailansicht (Volltext aus Feed oder Custom-Tab-Fallback)
-- [ ] Automatische Gelesen-Markierung bei Erreichen des Artikelendes +
+- [x] Artikel-Detailansicht (Volltext aus Feed oder Custom-Tab-Fallback)
+- [x] Automatische Gelesen-Markierung bei Erreichen des Artikelendes +
       hellgrüne Hervorhebung in der Liste
-- [ ] Swipe-to-dismiss (nach rechts) zum dauerhaften Ausblenden von Artikeln
-- [ ] Basisfilter: nach Herausgeber (Feed) und Gelesen/Ungelesen
-- [ ] Edge-to-edge-Layout ohne Überlappung des Fußbereichs
-- [ ] App-Info-Screen: Buildnummer, Anzeige dieser PLAN.md mit erledigten
+- [x] Swipe-to-dismiss (nach rechts) zum dauerhaften Ausblenden von Artikeln
+- [x] Basisfilter: nach Herausgeber (Feed) und Gelesen/Ungelesen
+- [x] Edge-to-edge-Layout ohne Überlappung des Fußbereichs – Standard-Pattern
+      (enableEdgeToEdge + Scaffold-Insets) implementiert, visuell auf einem
+      echten Gerät noch nicht bestätigt
+- [x] App-Info-Screen: Buildnummer, Anzeige dieser PLAN.md mit erledigten
       Punkten und nächstem Schritt
 
 ## Iteration 2 – Themen- und Filtersystem
