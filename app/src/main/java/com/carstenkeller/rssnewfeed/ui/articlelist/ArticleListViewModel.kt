@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class ReadFilter { ALLE, UNGELESEN, GELESEN }
-
 data class ArticleFilterState(
     val feedId: Long? = null,
-    val readFilter: ReadFilter = ReadFilter.ALLE,
+    // Everything new starts unread; unread is therefore the implicit default view and
+    // needs no filter option of its own. This just toggles into the "Gelesen" archive.
+    val showRead: Boolean = false,
     val includedTopics: Set<String> = emptySet(),
     val excludedTopics: Set<String> = emptySet(),
     val language: String? = null,
@@ -24,7 +24,7 @@ data class ArticleFilterState(
     val dateToMillis: Long? = null,
 ) {
     val isDefault: Boolean
-        get() = feedId == null && readFilter == ReadFilter.ALLE && includedTopics.isEmpty() &&
+        get() = feedId == null && !showRead && includedTopics.isEmpty() &&
             excludedTopics.isEmpty() && language == null && dateFromMillis == null && dateToMillis == null
 }
 
@@ -50,13 +50,7 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
     ) { articles, feeds, filter, refreshing ->
         val filtered = articles
             .filter { filter.feedId == null || it.feedId == filter.feedId }
-            .filter {
-                when (filter.readFilter) {
-                    ReadFilter.ALLE -> true
-                    ReadFilter.UNGELESEN -> !it.isRead
-                    ReadFilter.GELESEN -> it.isRead
-                }
-            }
+            .filter { it.isRead == filter.showRead }
             .filter { filter.includedTopics.isEmpty() || matchesAnyTopic(it, filter.includedTopics) }
             .filter { filter.excludedTopics.isEmpty() || !matchesAnyTopic(it, filter.excludedTopics) }
             .filter { filter.language == null || it.publisherLanguage == filter.language }
@@ -101,8 +95,8 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
         filterState.value = filterState.value.copy(feedId = feedId)
     }
 
-    fun setReadFilter(readFilter: ReadFilter) {
-        filterState.value = filterState.value.copy(readFilter = readFilter)
+    fun setShowRead(showRead: Boolean) {
+        filterState.value = filterState.value.copy(showRead = showRead)
     }
 
     fun toggleIncludedTopic(topic: String) {
@@ -131,7 +125,8 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
         filterState.value = ArticleFilterState()
     }
 
-    fun dismissArticle(articleId: Long) {
-        viewModelScope.launch { repository.dismiss(articleId) }
+    /** Swiping an article away marks it read (moves it to "Gelesen") rather than deleting it. */
+    fun swipeToRead(articleId: Long) {
+        viewModelScope.launch { repository.markRead(articleId) }
     }
 }

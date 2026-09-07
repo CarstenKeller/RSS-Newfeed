@@ -58,7 +58,7 @@ fun InfoScreen(
         ) {
             item {
                 Text(
-                    text = "RSS Newfeed",
+                    text = "RSS Newsfeed",
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(top = 16.dp),
                 )

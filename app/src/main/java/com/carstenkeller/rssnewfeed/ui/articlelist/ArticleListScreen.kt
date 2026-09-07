@@ -1,6 +1,8 @@
 package com.carstenkeller.rssnewfeed.ui.articlelist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RssFeed
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -62,7 +68,7 @@ fun ArticleListScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("RSS Newfeed") },
+                    title = { Text("RSS Newsfeed") },
                     colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                     actions = {
                         IconButton(onClick = { filterSheetOpen = true }) {
@@ -85,8 +91,8 @@ fun ArticleListScreen(
                     },
                 )
                 ReadFilterRow(
-                    selected = state.filter.readFilter,
-                    onSelect = viewModel::setReadFilter,
+                    showRead = state.filter.showRead,
+                    onToggle = viewModel::setShowRead,
                 )
             }
         },
@@ -101,10 +107,10 @@ fun ArticleListScreen(
             if (state.articles.isEmpty() && !state.isRefreshing) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        if (state.feeds.isEmpty()) {
-                            "Noch keine Feeds hinzugefügt. Tippe oben auf das Feed-Symbol."
-                        } else {
-                            "Keine Artikel für diesen Filter."
+                        when {
+                            state.feeds.isEmpty() -> "Noch keine Feeds hinzugefügt. Tippe oben auf das Feed-Symbol."
+                            state.filter.showRead -> "Noch keine gelesenen Artikel."
+                            else -> "Alles gelesen — keine ungelesenen Artikel."
                         },
                     )
                 }
@@ -117,7 +123,7 @@ fun ArticleListScreen(
                     DismissibleArticleRow(
                         article = article,
                         onClick = { onOpenArticle(article.id) },
-                        onDismiss = { viewModel.dismissArticle(article.id) },
+                        onDismiss = { viewModel.swipeToRead(article.id) },
                     )
                 }
             }
@@ -139,20 +145,18 @@ fun ArticleListScreen(
 }
 
 @Composable
-private fun ReadFilterRow(selected: ReadFilter, onSelect: (ReadFilter) -> Unit) {
+private fun ReadFilterRow(showRead: Boolean, onToggle: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ReadFilter.entries.forEach { option ->
-            FilterChip(
-                selected = selected == option,
-                onClick = { onSelect(option) },
-                label = { Text(option.name.lowercase().replaceFirstChar { it.uppercase() }) },
-            )
-        }
+        FilterChip(
+            selected = showRead,
+            onClick = { onToggle(!showRead) },
+            label = { Text("Gelesen anzeigen") },
+        )
     }
 }
 
@@ -187,14 +191,14 @@ private fun DismissibleArticleRow(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.medium)
                         .padding(horizontal = 20.dp),
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = "Ausblenden",
-                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        Icons.Filled.Done,
+                        contentDescription = "Als gelesen markieren",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             },
@@ -206,6 +210,11 @@ private fun DismissibleArticleRow(
 
 @Composable
 private fun ArticleRow(article: ArticleListItem, onClick: () -> Unit) {
+    var categoriesExpanded by remember(article.id) { mutableStateOf(false) }
+    val categories = remember(article.categories) {
+        article.categories.split(",").map { it.trim() }.filter { it.isNotBlank() }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = androidx.compose.material3.CardDefaults.cardColors(
@@ -255,6 +264,34 @@ private fun ArticleRow(article: ArticleListItem, onClick: () -> Unit) {
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                     )
+                }
+                if (categories.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .clickable { categoriesExpanded = !categoriesExpanded }
+                            .padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            if (categoriesExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text("Kategorien (${categories.size})", style = MaterialTheme.typography.labelSmall)
+                    }
+                    if (categoriesExpanded) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            categories.forEach { category ->
+                                AssistChip(onClick = {}, label = { Text(category) })
+                            }
+                        }
+                    }
                 }
             }
         }

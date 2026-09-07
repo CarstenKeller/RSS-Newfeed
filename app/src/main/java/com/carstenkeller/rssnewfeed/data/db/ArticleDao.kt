@@ -17,7 +17,6 @@ interface ArticleDao {
                f.language AS publisherLanguage, a.categories AS categories
         FROM articles a
         INNER JOIN feeds f ON f.id = a.feedId
-        WHERE a.isDismissed = 0
         ORDER BY a.publishedAt DESC
         """
     )
@@ -34,7 +33,4 @@ interface ArticleDao {
 
     @Query("UPDATE articles SET isRead = 1 WHERE id = :id")
     suspend fun markRead(id: Long)
-
-    @Query("UPDATE articles SET isDismissed = 1 WHERE id = :id")
-    suspend fun dismiss(id: Long)
 }

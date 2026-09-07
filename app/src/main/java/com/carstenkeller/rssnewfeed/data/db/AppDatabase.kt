@@ -4,6 +4,21 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+
+/**
+ * Build 2 added `feeds.topicTag` and `articles.categories` but shipped with
+ * fallbackToDestructiveMigration(), which silently wiped every saved feed on
+ * update instead of migrating. Never do that again: schema changes from here
+ * on get an explicit Migration that preserves existing data.
+ */
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE feeds ADD COLUMN topicTag TEXT")
+        db.execSQL("ALTER TABLE articles ADD COLUMN categories TEXT NOT NULL DEFAULT ''")
+    }
+}
 
 @Database(entities = [FeedEntity::class, ArticleEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -20,9 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "rss-newfeed.db",
                 )
-                    // Pre-release app, no schema migrations shipped yet: dropping and
-                    // recreating on a version bump is an accepted, explicit trade-off.
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_1_2)
                     .build().also { instance = it }
             }
     }

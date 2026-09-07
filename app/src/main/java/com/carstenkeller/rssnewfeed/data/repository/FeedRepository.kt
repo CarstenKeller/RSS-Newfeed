@@ -73,6 +73,4 @@ class FeedRepository(
     }
 
     suspend fun markRead(articleId: Long) = articleDao.markRead(articleId)
-
-    suspend fun dismiss(articleId: Long) = articleDao.dismiss(articleId)
 }

@@ -34,5 +34,8 @@ data class ArticleEntity(
     /** Comma-joined `<category>` tags from the feed item, used as a secondary topic filter signal. */
     val categories: String = "",
     val isRead: Boolean = false,
+    // No longer written or queried: swiping an article now marks it read instead of
+    // hiding it (dismissed articles are meant to stay reachable under "Gelesen").
+    // Kept in the schema to avoid another migration for a single unused column.
     val isDismissed: Boolean = false,
 )

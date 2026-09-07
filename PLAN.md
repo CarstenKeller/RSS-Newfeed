@@ -1,4 +1,4 @@
-# RSS Newfeed – Projektplan
+# RSS Newsfeed – Projektplan
 
 Android-Nachrichten-App zum gezielten, thematisch gefilterten Lesen von RSS-Feeds
 mehrerer Agenturen/Anbieter. Zielplattform: Android 16 (API 36), minSdk 26.
@@ -28,30 +28,32 @@ diese Datei + nächster offener Schritt).
 
 ## Iteration 1 – MVP (vollständig nutzbare Basisfunktionen)
 
-Stand Build 2: Auf Build 1 hin gab es echtes Nutzer-Feedback (zwei reale
-RSS-Feeds getestet) mit zwei Bugs, beide behoben:
-- Herausgeber-Name zeigte die rohe Feed-URL statt eines lesbaren Titels
-  (off-by-one bei der XML-Tiefenprüfung für RSS-2.0-Feeds).
-- Der rote Swipe-Hintergrund war dauerhaft sichtbar statt nur beim Wischen
-  (Karte und Hintergrund hatten unterschiedliche Ränder).
-Zusätzlich Farbschema komplett überarbeitet (kein zufälliges Wallpaper-Farbschema
-mehr, bewusste kontrastreiche Palette, Rot nur noch für die Lösch-Geste).
+Stand Build 3: Build 1 → Build 2 hatte einen ernsten, jetzt behobenen Bug:
+`fallbackToDestructiveMigration()` hat beim Schema-Update vermutlich alle
+gespeicherten Feeds gelöscht. Ab jetzt gibt es für jede Schema-Änderung eine
+echte `Migration`, die bestehende Daten erhält – Feed-Quellen bleiben ab Build 3
+versionsübergreifend gespeichert. App-Name korrigiert zu "RSS Newsfeed"
+(Paketname/Repo-Name bleiben unverändert, um die Update-Kette nicht zu brechen).
 
 - [x] Projekt-Grundgerüst (Gradle, Compose, Room, WorkManager, Navigation)
 - [x] Debug-Signing-Konfiguration fix (konsistenter Keystore für Update-Erkennung)
 - [x] Datenmodell: FeedSource, Article (Room-Entities + DAO)
 - [x] RSS/Atom-Parser (Titel, Bild, Zusammenfassung, Volltext falls vorhanden,
-      Herausgeber, Datum, Link, Kategorie) – Feed-Titel-Bug behoben, gegen
-      zwei echte Feeds (n-tv, tagesschau) erfolgreich getestet
-- [x] Feed-Verwaltung: Hinzufügen/Bearbeiten/Entfernen von Feed-URLs
+      Herausgeber, Datum, Link, Kategorie) – gegen echte Feeds (n-tv, tagesschau)
+      erfolgreich getestet
+- [x] Feed-Verwaltung: Hinzufügen/Bearbeiten/Entfernen von Feed-URLs –
+      bleiben jetzt zuverlässig über Updates hinweg gespeichert
 - [x] Feed-Refresh: manuell (Pull-to-Refresh) + periodisch im Hintergrund
 - [x] Artikel-Liste: chronologisch (neueste zuerst), Bild + Titel + max.
-      2-zeilige Zusammenfassung + Herausgeber
+      2-zeilige Zusammenfassung + Herausgeber + Datum/Uhrzeit + aufklappbare
+      erkannte Kategorien
 - [x] Artikel-Detailansicht (Volltext aus Feed oder Custom-Tab-Fallback)
 - [x] Automatische Gelesen-Markierung bei Erreichen des Artikelendes +
       hellgrüne Hervorhebung in der Liste
-- [x] Swipe-to-dismiss (nach rechts) zum dauerhaften Ausblenden von Artikeln
-- [x] Basisfilter: nach Herausgeber (Feed) und Gelesen/Ungelesen
+- [x] Swipe nach rechts markiert einen Artikel als gelesen (verschiebt ihn in
+      die "Gelesen"-Ansicht, statt ihn zu löschen)
+- [x] Standardansicht zeigt nur ungelesene Artikel; ein Umschalter "Gelesen
+      anzeigen" blendet die gelesenen/wegewischten Artikel ein
 - [x] Edge-to-edge-Layout ohne Überlappung des Fußbereichs – von dir bereits
       erfolgreich getestet
 - [x] App-Info-Screen: Buildnummer, Anzeige dieser PLAN.md mit erledigten
@@ -59,21 +61,21 @@ mehr, bewusste kontrastreiche Palette, Rot nur noch für die Lösch-Geste).
 
 ## Iteration 2 – Themen- und Filtersystem
 
-Stand Build 2: implementiert, aber (wie schon bei Build 1) nur CI-kompiliert,
-noch nicht von dir auf dem Gerät getestet – bitte insbesondere die
-Themen-Zuweisung und das Filter-Sheet ausprobieren.
+Stand Build 3: implementiert, noch nicht von dir auf dem Gerät getestet –
+bitte insbesondere die Themen-Zuweisung und das Filter-Sheet ausprobieren.
 
 - [x] Themen-Tag pro Feed (manuell zuweisbar: Politik, Weltgeschehen,
       Wirtschaft, Sport, Kultur, Wissenschaft & Technik, Sonstiges) –
       Zuweisung über Bearbeiten-Dialog in der Feed-Verwaltung
-- [x] Auswertung vorhandener `<category>`-Tags aus dem Feed als Zusatzfilter
+- [x] Auswertung vorhandener `<category>`-Tags aus dem Feed als Zusatzfilter,
+      pro Artikel aufklappbar einsehbar
 - [x] Filter-UI: Themen ein-/ausschließen (z. B. Sport ausblenden) – neues
       Filter-Sheet über das Filter-Icon (rot hervorgehoben, wenn ein Filter aktiv ist)
 - [x] Sprachfilter (pro Feed hinterlegt)
 - [x] Datums-/Zeitraumfilter (Von/Bis über Datumsauswahl)
 - [x] Kombinierbare Filter (Herausgeber + Thema + Datum + Sprache gleichzeitig)
-- [x] Dauerhafte Persistenz verworfener Artikel (bereits seit Iteration 1
-      durch die Room-Datenbank gegeben)
+- [x] Dauerhafte Persistenz gelesener/weggewischter Artikel (Room-Datenbank,
+      jetzt mit echter Migration statt destruktivem Fallback)
 
 ## Iteration 3 – Ausbaustufen (optional, nach Bedarf)
 
