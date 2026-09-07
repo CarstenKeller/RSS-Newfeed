@@ -12,34 +12,44 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
@@ -52,12 +62,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.carstenkeller.rssnewfeed.BuildConfig
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
+import com.carstenkeller.rssnewfeed.data.locale.LanguagePreferences
 import com.carstenkeller.rssnewfeed.ui.notifications.NotificationSettingsDialog
+import com.carstenkeller.rssnewfeed.ui.settings.LanguageDialog
+import com.carstenkeller.rssnewfeed.ui.settings.ThemeModeDialog
+import com.carstenkeller.rssnewfeed.ui.theme.AppearancePreferences
 import com.carstenkeller.rssnewfeed.ui.theme.readHighlightColor
 import java.time.Instant
 import java.time.ZoneId
@@ -73,9 +89,13 @@ fun ArticleListScreen(
     onOpenInfo: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     var filterSheetOpen by remember { mutableStateOf(false) }
     var searchExpanded by remember { mutableStateOf(false) }
     var notificationSettingsOpen by remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
+    var appearanceDialogOpen by remember { mutableStateOf(false) }
+    var languageDialogOpen by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val showScrollToTop by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
@@ -83,68 +103,80 @@ fun ArticleListScreen(
     Scaffold(
         topBar = {
             Column {
-                TopAppBar(
-                    title = {
-                        if (searchExpanded) {
-                            OutlinedTextField(
-                                value = state.searchQuery,
-                                onValueChange = viewModel::setSearchQuery,
-                                placeholder = { Text("Suche in Titel/Zusammenfassung") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        } else {
-                            Text("RSS Newsfeed")
-                        }
-                    },
-                    colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
-                    actions = {
-                        if (searchExpanded) {
-                            IconButton(onClick = {
-                                searchExpanded = false
-                                viewModel.setSearchQuery("")
-                            }) {
-                                Icon(Icons.Filled.Close, contentDescription = "Suche schließen")
-                            }
-                        } else {
-                            IconButton(onClick = { searchExpanded = true }) {
-                                Icon(Icons.Filled.Search, contentDescription = "Suchen")
-                            }
-                            IconButton(onClick = { filterSheetOpen = true }) {
-                                Icon(
-                                    Icons.Filled.FilterList,
-                                    contentDescription = "Filter",
-                                    tint = if (state.filter.isDefault) {
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    } else {
-                                        MaterialTheme.colorScheme.error
-                                    },
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Column(modifier = Modifier.statusBarsPadding()) {
+                        Text(
+                            text = "RSS Newsfeed",
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
+                        )
+                        if (!searchExpanded) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Box {
+                                    IconButton(onClick = { menuExpanded = true }) {
+                                        Icon(Icons.Filled.Menu, contentDescription = "Menü")
+                                    }
+                                    if (!state.filter.isDefault) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(8.dp)
+                                                .align(Alignment.TopEnd)
+                                                .background(MaterialTheme.colorScheme.error, CircleShape),
+                                        )
+                                    }
+                                    MainMenu(
+                                        expanded = menuExpanded,
+                                        onDismiss = { menuExpanded = false },
+                                        filterActive = !state.filter.isDefault,
+                                        onSearch = { searchExpanded = true },
+                                        onFilter = { filterSheetOpen = true },
+                                        onNotifications = { notificationSettingsOpen = true },
+                                        onManageFeeds = onOpenFeedManagement,
+                                        onAppearance = { appearanceDialogOpen = true },
+                                        onLanguage = { languageDialogOpen = true },
+                                        onInfo = onOpenInfo,
+                                    )
+                                }
+                                FilterChip(
+                                    selected = state.filter.showRead,
+                                    onClick = { viewModel.setShowRead(!state.filter.showRead) },
+                                    label = { Text(if (state.filter.showRead) "Ungelesen anzeigen" else "Gelesen anzeigen") },
                                 )
-                            }
-                            IconButton(onClick = { notificationSettingsOpen = true }) {
-                                Icon(Icons.Filled.Notifications, contentDescription = "Themen-Benachrichtigungen")
-                            }
-                            IconButton(onClick = onOpenFeedManagement) {
-                                Icon(Icons.Filled.RssFeed, contentDescription = "Feeds verwalten")
-                            }
-                            IconButton(onClick = onOpenInfo) {
-                                Icon(Icons.Filled.Info, contentDescription = "App-Info")
+                                if (showScrollToTop) {
+                                    AssistChip(
+                                        onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } },
+                                        leadingIcon = { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null) },
+                                        label = { Text("Nach oben") },
+                                    )
+                                }
                             }
                         }
-                    },
-                )
-                if (searchExpanded) {
-                    SearchScopeRow(scope = state.searchScope, onSelect = viewModel::setSearchScope)
-                } else {
-                    ReadFilterRow(
-                        showRead = state.filter.showRead,
-                        onToggle = viewModel::setShowRead,
-                        showScrollToTop = showScrollToTop,
-                        onScrollToTop = { coroutineScope.launch { listState.animateScrollToItem(0) } },
-                    )
-                    if (state.presets.isNotEmpty()) {
-                        PresetQuickRow(presets = state.presets, onApply = viewModel::applyPreset)
                     }
+                }
+                if (searchExpanded) {
+                    SearchPanel(
+                        query = state.searchQuery,
+                        onQueryChange = viewModel::setSearchQuery,
+                        scope = state.searchScope,
+                        onSelectScope = viewModel::setSearchScope,
+                        onClose = {
+                            searchExpanded = false
+                            viewModel.setSearchQuery("")
+                        },
+                    )
+                } else if (state.presets.isNotEmpty()) {
+                    PresetQuickRow(presets = state.presets, onApply = viewModel::applyPreset)
                 }
             }
         },
@@ -160,7 +192,7 @@ fun ArticleListScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         when {
-                            state.feeds.isEmpty() -> "Noch keine Feeds hinzugefügt. Tippe oben auf das Feed-Symbol."
+                            state.feeds.isEmpty() -> "Noch keine Feeds hinzugefügt. Tippe oben auf das Menü-Symbol."
                             state.searchQuery.isNotBlank() -> "Keine Treffer für \"${state.searchQuery}\"."
                             state.filter.showRead -> "Noch keine gelesenen Artikel."
                             else -> "Alles gelesen — keine ungelesenen Artikel."
@@ -204,6 +236,124 @@ fun ArticleListScreen(
     if (notificationSettingsOpen) {
         NotificationSettingsDialog(onDismiss = { notificationSettingsOpen = false })
     }
+
+    if (appearanceDialogOpen) {
+        val themeMode by AppearancePreferences.themeMode.collectAsState()
+        ThemeModeDialog(
+            current = themeMode,
+            onSelect = { AppearancePreferences.setThemeMode(context, it) },
+            onDismiss = { appearanceDialogOpen = false },
+        )
+    }
+
+    if (languageDialogOpen) {
+        LanguageDialog(
+            current = LanguagePreferences.getLanguage(),
+            onSelect = { LanguagePreferences.setLanguage(it) },
+            onDismiss = { languageDialogOpen = false },
+        )
+    }
+}
+
+@Composable
+private fun MainMenu(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    filterActive: Boolean,
+    onSearch: () -> Unit,
+    onFilter: () -> Unit,
+    onNotifications: () -> Unit,
+    onManageFeeds: () -> Unit,
+    onAppearance: () -> Unit,
+    onLanguage: () -> Unit,
+    onInfo: () -> Unit,
+) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        DropdownMenuItem(
+            text = { Text("Suchen") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            onClick = { onDismiss(); onSearch() },
+        )
+        DropdownMenuItem(
+            text = { Text(if (filterActive) "Filter (aktiv)" else "Filter") },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.FilterList,
+                    contentDescription = null,
+                    tint = if (filterActive) MaterialTheme.colorScheme.error else LocalContentColor.current,
+                )
+            },
+            onClick = { onDismiss(); onFilter() },
+        )
+        DropdownMenuItem(
+            text = { Text("Themen-Benachrichtigungen") },
+            leadingIcon = { Icon(Icons.Filled.Notifications, contentDescription = null) },
+            onClick = { onDismiss(); onNotifications() },
+        )
+        DropdownMenuItem(
+            text = { Text("Feeds verwalten") },
+            leadingIcon = { Icon(Icons.Filled.RssFeed, contentDescription = null) },
+            onClick = { onDismiss(); onManageFeeds() },
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text("Darstellung") },
+            leadingIcon = { Icon(Icons.Filled.DarkMode, contentDescription = null) },
+            onClick = { onDismiss(); onAppearance() },
+        )
+        DropdownMenuItem(
+            text = { Text("Sprache") },
+            leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
+            onClick = { onDismiss(); onLanguage() },
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text("Version ${BuildConfig.VERSION_NAME} · Build ${BuildConfig.BUILD_NUMBER}") },
+            leadingIcon = { Icon(Icons.Filled.Info, contentDescription = null) },
+            onClick = { onDismiss(); onInfo() },
+        )
+    }
+}
+
+@Composable
+private fun SearchPanel(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    scope: SearchScope,
+    onSelectScope: (SearchScope) -> Unit,
+    onClose: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 3.dp,
+    ) {
+        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    placeholder = { Text("Titel, Zusammenfassung …", maxLines = 1) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = onClose) {
+                    Icon(Icons.Filled.Close, contentDescription = "Suche schließen")
+                }
+            }
+            SearchScopeRow(scope = scope, onSelect = onSelectScope)
+        }
+    }
 }
 
 @Composable
@@ -212,14 +362,9 @@ private fun SearchScopeRow(scope: SearchScope, onSelect: (SearchScope) -> Unit) 
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            "Durchsuchen:",
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(top = 8.dp),
-        )
         FilterChip(
             selected = scope == SearchScope.ALLE,
             onClick = { onSelect(SearchScope.ALLE) },
@@ -253,34 +398,6 @@ private fun PresetQuickRow(
     ) {
         presets.forEach { preset ->
             AssistChip(onClick = { onApply(preset) }, label = { Text(preset.name) })
-        }
-    }
-}
-
-@Composable
-private fun ReadFilterRow(
-    showRead: Boolean,
-    onToggle: (Boolean) -> Unit,
-    showScrollToTop: Boolean,
-    onScrollToTop: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        FilterChip(
-            selected = showRead,
-            onClick = { onToggle(!showRead) },
-            label = { Text(if (showRead) "Ungelesen anzeigen" else "Gelesen anzeigen") },
-        )
-        if (showScrollToTop) {
-            AssistChip(
-                onClick = onScrollToTop,
-                leadingIcon = { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null) },
-                label = { Text("Nach oben") },
-            )
         }
     }
 }

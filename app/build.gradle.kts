@@ -15,8 +15,8 @@ android {
         applicationId = "com.carstenkeller.rssnewfeed"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "0.7.0-multi-publisher"
+        versionCode = 8
+        versionName = "0.8.0-menu-appearance"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "BUILD_NUMBER", "$versionCode")
@@ -82,6 +82,9 @@ dependencies {
     androidTestImplementation(composeBom)
 
     implementation("androidx.core:core-ktx:1.15.0")
+    // Only used for AppCompatDelegate's per-app language API (Darstellung/Sprache-Menü) -
+    // this app has no AppCompatActivity and otherwise stays on plain ComponentActivity.
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")

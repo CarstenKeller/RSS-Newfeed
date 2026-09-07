@@ -8,6 +8,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // A deliberately chosen blue/indigo palette instead of the device's dynamic
@@ -51,8 +53,11 @@ private val DarkColors = darkColorScheme(
 private val ReadHighlightLight = Color(0xFFD7F2DA)
 private val ReadHighlightDark = Color(0xFF20402A)
 
+/** Whether dark colors are actually active right now (after resolving ThemeMode.SYSTEM). */
+private val LocalDarkThemeActive = compositionLocalOf { false }
+
 @Composable
-fun readHighlightColor(): Color = if (isSystemInDarkTheme()) ReadHighlightDark else ReadHighlightLight
+fun readHighlightColor(): Color = if (LocalDarkThemeActive.current) ReadHighlightDark else ReadHighlightLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,9 +70,16 @@ fun brandedTopAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColor
 
 @Composable
 fun RssNewfeedTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit,
 ) {
+    val darkTheme = when (themeMode) {
+        ThemeMode.HELL -> false
+        ThemeMode.DUNKEL -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
     val colorScheme = if (darkTheme) DarkColors else LightColors
-    MaterialTheme(colorScheme = colorScheme, content = content)
+    CompositionLocalProvider(LocalDarkThemeActive provides darkTheme) {
+        MaterialTheme(colorScheme = colorScheme, content = content)
+    }
 }

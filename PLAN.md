@@ -142,6 +142,36 @@ Stand Build 7: beide Punkte umgesetzt, noch nicht auf dem Gerät getestet.
       aus älteren Builds (einzelner Herausgeber) werden beim Laden automatisch
       in das neue Format überführt
 
+## Iteration 6 – Feedback nach Build 7 (Header, Darstellung, Sprache)
+
+Stand Build 8: umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] Header neu strukturiert: Titelzeile ("RSS Newsfeed") jetzt immer als eigene
+      erste Zeile, ohne mit Icons um Platz konkurrieren zu müssen. Darunter ein
+      Hamburger-Menü, das Suche, Filter, Themen-Benachrichtigungen, Feeds
+      verwalten, Darstellung und Sprache bündelt (vorher einzelne Icons in der
+      Kopfzeile). Rechts daneben weiterhin direkt erreichbar: der
+      Gelesen/Ungelesen-Umschalter und (bei Bedarf) "Nach oben". Ein roter
+      Punkt am Menü-Symbol zeigt an, wenn ein Filter aktiv ist. Der unterste
+      Menüpunkt zeigt Versionsnummer und Build-Nummer direkt an und führt wie
+      bisher zum vollständigen Info-Screen mit PLAN.md.
+- [x] Darstellung: Hell/Dunkel/System (Standard) über das Hamburger-Menü
+      wählbar, wird dauerhaft gespeichert und wirkt sofort ohne Neustart.
+- [x] Sprache: Deutsch/English über das Hamburger-Menü wählbar (technischer
+      Umschalter über Androids Pro-App-Sprache-API). **Wichtige Einschränkung**:
+      Dies stellt bisher nur die interne Locale um (Datumsformate, Tastatur) –
+      die Bildschirmtexte selbst sind weiterhin durchgängig als deutscher Text
+      im Code hinterlegt (kein strings.xml mit Übersetzungen) und ändern sich
+      beim Umschalten noch nicht sichtbar. Eine echte Übersetzung erfordert das
+      Auslagern aller Texte in String-Ressourcen (de/en) – das ist eine eigene,
+      größere Folge-Iteration und noch nicht umgesetzt.
+- [x] Bugfix: Das Suchfeld saß im engen Titel-Slot der alten Kopfzeile, wodurch
+      der lange Platzhaltertext umbrach und das Feld ungewöhnlich hoch wurde.
+      Jetzt eigenständiger Bereich mit kurzem, einzeiligem Platzhalter.
+- [x] Suchfeld und Alle/Ungelesen/Gelesen-Auswahl sind jetzt in einer
+      gemeinsamen Karte zusammengefasst, damit der Zusammenhang optisch
+      erkennbar ist; das zusätzliche Label "Durchsuchen:" entfällt dadurch.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar
