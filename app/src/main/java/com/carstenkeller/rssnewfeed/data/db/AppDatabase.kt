@@ -20,7 +20,16 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
-@Database(entities = [FeedEntity::class, ArticleEntity::class], version = 2, exportSchema = false)
+/** Replaces the single-topic feeds.topicTag with a comma-joined topicTags, carrying over
+ * each feed's existing topic so multi-topic assignment doesn't lose anyone's setup. */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE feeds ADD COLUMN topicTags TEXT NOT NULL DEFAULT ''")
+        db.execSQL("UPDATE feeds SET topicTags = topicTag WHERE topicTag IS NOT NULL AND topicTag != ''")
+    }
+}
+
+@Database(entities = [FeedEntity::class, ArticleEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun feedDao(): FeedDao
     abstract fun articleDao(): ArticleDao
@@ -35,7 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "rss-newfeed.db",
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build().also { instance = it }
             }
     }

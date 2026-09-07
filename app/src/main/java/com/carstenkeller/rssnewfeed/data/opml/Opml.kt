@@ -6,7 +6,7 @@ import org.xmlpull.v1.XmlPullParser
 import java.io.InputStream
 import java.io.StringWriter
 
-data class OpmlFeed(val title: String, val url: String, val topicTag: String?)
+data class OpmlFeed(val title: String, val url: String, val topicTags: String)
 
 /** Writes/reads the standard OPML subscription-list format so feed lists survive outside the app. */
 object Opml {
@@ -31,7 +31,7 @@ object Opml {
             serializer.attribute(null, "type", "rss")
             serializer.attribute(null, "xmlUrl", feed.url)
             feed.language?.let { serializer.attribute(null, "language", it) }
-            feed.topicTag?.let { serializer.attribute(null, "category", it) }
+            feed.topicTags.takeIf { it.isNotBlank() }?.let { serializer.attribute(null, "category", it) }
             serializer.endTag(null, "outline")
         }
         serializer.endTag(null, "body")
@@ -54,8 +54,8 @@ object Opml {
                     val title = parser.getAttributeValue(null, "title")
                         ?: parser.getAttributeValue(null, "text")
                         ?: url
-                    val category = parser.getAttributeValue(null, "category")
-                    feeds += OpmlFeed(title = title, url = url, topicTag = category)
+                    val category = parser.getAttributeValue(null, "category") ?: ""
+                    feeds += OpmlFeed(title = title, url = url, topicTags = category)
                 }
             }
             eventType = parser.next()

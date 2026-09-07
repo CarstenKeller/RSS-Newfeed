@@ -11,7 +11,7 @@ data class ArticleListItem(
     val publishedAt: Long,
     val isRead: Boolean,
     val publisherName: String,
-    val publisherTopicTag: String?,
+    val publisherTopicTags: String,
     val publisherLanguage: String?,
     val categories: String,
 )

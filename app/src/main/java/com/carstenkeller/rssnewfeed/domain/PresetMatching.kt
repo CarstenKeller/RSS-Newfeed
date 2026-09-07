@@ -12,7 +12,7 @@ object PresetMatching {
     fun matches(
         preset: FilterPreset,
         feedId: Long,
-        feedTopicTag: String?,
+        feedTopicTags: String,
         categoriesCsv: String,
         title: String,
         summary: String,
@@ -21,12 +21,12 @@ object PresetMatching {
         if (preset.feedIds.isNotEmpty() && feedId !in preset.feedIds) return false
         if (preset.language != null && preset.language != feedLanguage) return false
         if (preset.includedTopics.isNotEmpty() &&
-            !TopicMatching.matches(feedTopicTag, categoriesCsv, title, summary, preset.includedTopics)
+            !TopicMatching.matches(feedTopicTags, categoriesCsv, title, summary, preset.includedTopics)
         ) {
             return false
         }
         if (preset.excludedTopics.isNotEmpty() &&
-            TopicMatching.matches(feedTopicTag, categoriesCsv, title, summary, preset.excludedTopics)
+            TopicMatching.matches(feedTopicTags, categoriesCsv, title, summary, preset.excludedTopics)
         ) {
             return false
         }

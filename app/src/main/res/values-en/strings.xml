@@ -35,6 +35,9 @@
     <string name="toggle_show_unread">Show unread</string>
     <string name="toggle_show_read">Show read</string>
     <string name="scroll_to_top">Scroll to top</string>
+    <string name="menu_manage_topics">Manage topics</string>
+    <string name="topics_hint">These topics are offered when tagging feeds, filtering, and setting up notifications. Add your own — e.g. “Cars” alongside “Auto” if you read both German- and English-language feeds.</string>
+    <string name="topic_name_label">Topic name</string>
 
     <!-- Article list empty states -->
     <string name="empty_no_feeds">No feeds added yet. Tap the menu icon above.</string>

@@ -118,7 +118,7 @@ class ArticleListViewModel(
     }
 
     private fun matchesAnyTopic(item: ArticleListItem, topics: Set<String>): Boolean = TopicMatching.matches(
-        feedTopicTag = item.publisherTopicTag,
+        feedTopicTags = item.publisherTopicTags,
         categoriesCsv = item.categories,
         title = item.title,
         summary = item.summary,

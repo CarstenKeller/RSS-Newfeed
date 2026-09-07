@@ -43,12 +43,12 @@ class FeedRefreshWorker(context: Context, params: WorkerParameters) : CoroutineW
 
         val matches = newArticles.filter { article ->
             (watchedTopics.isNotEmpty() &&
-                TopicMatching.matches(article.feedTopicTag, article.categories, article.title, article.summary, watchedTopics)) ||
+                TopicMatching.matches(article.feedTopicTags, article.categories, article.title, article.summary, watchedTopics)) ||
                 watchedPresets.any { preset ->
                     PresetMatching.matches(
                         preset = preset,
                         feedId = article.feedId,
-                        feedTopicTag = article.feedTopicTag,
+                        feedTopicTags = article.feedTopicTags,
                         categoriesCsv = article.categories,
                         title = article.title,
                         summary = article.summary,

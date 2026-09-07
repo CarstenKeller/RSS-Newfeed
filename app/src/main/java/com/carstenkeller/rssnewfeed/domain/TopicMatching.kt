@@ -42,13 +42,16 @@ private val TOPIC_KEYWORDS: Map<String, List<String>> = mapOf(
 object TopicMatching {
 
     fun matches(
-        feedTopicTag: String?,
+        feedTopicTags: String,
         categoriesCsv: String,
         title: String,
         summary: String,
         watchedTopics: Set<String>,
     ): Boolean {
-        if (feedTopicTag != null && feedTopicTag in watchedTopics) return true
+        if (feedTopicTags.isNotBlank()) {
+            val feedTopics = feedTopicTags.split(",").map { it.trim() }
+            if (feedTopics.any { it in watchedTopics }) return true
+        }
 
         if (categoriesCsv.isNotBlank()) {
             val categories = categoriesCsv.split(",")

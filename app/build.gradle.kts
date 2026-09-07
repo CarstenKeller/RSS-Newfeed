@@ -15,8 +15,8 @@ android {
         applicationId = "com.carstenkeller.rssnewfeed"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.0.0-i18n"
+        versionCode = 12
+        versionName = "1.1.0-custom-topics"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "BUILD_NUMBER", "$versionCode")

@@ -17,7 +17,7 @@ data class NewArticleInfo(
     val summary: String,
     val categories: String,
     val feedId: Long,
-    val feedTopicTag: String?,
+    val feedTopicTags: String,
     val feedLanguage: String?,
 )
 
@@ -34,13 +34,13 @@ class FeedRepository(
     fun observeArticle(id: Long): Flow<ArticleEntity?> = articleDao.observeArticle(id)
 
     /** Adds a feed by URL, using the feed's own title, then does an initial refresh. */
-    suspend fun addFeed(url: String, topicTag: String? = null) {
+    suspend fun addFeed(url: String, topicTags: String = "") {
         val parsed = fetcher.fetchAndParse(url)
         val feed = FeedEntity(
             url = url,
             title = parsed.title.ifBlank { url },
             language = parsed.language,
-            topicTag = topicTag,
+            topicTags = topicTags,
             addedAt = System.currentTimeMillis(),
         )
         val feedId = feedDao.insert(feed)
@@ -64,7 +64,7 @@ class FeedRepository(
                 continue
             }
             try {
-                addFeed(opmlFeed.url, opmlFeed.topicTag)
+                addFeed(opmlFeed.url, opmlFeed.topicTags)
                 added++
             } catch (e: Exception) {
                 failed++
@@ -91,7 +91,7 @@ class FeedRepository(
             val parsed = fetcher.fetchAndParse(feed.url)
             val inserted = storeItems(feed.id, parsed.items)
             feedDao.update(feed.copy(lastFetchedAt = System.currentTimeMillis(), lastFetchError = null))
-            inserted.map { NewArticleInfo(it.title, it.summary, it.categories, feed.id, feed.topicTag, feed.language) }
+            inserted.map { NewArticleInfo(it.title, it.summary, it.categories, feed.id, feed.topicTags, feed.language) }
         } catch (e: Exception) {
             feedDao.update(feed.copy(lastFetchError = e.message ?: "Unbekannter Fehler"))
             emptyList()

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -45,13 +46,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -88,6 +93,7 @@ fun ArticleListScreen(
     viewModel: ArticleListViewModel,
     onOpenArticle: (Long) -> Unit,
     onOpenFeedManagement: () -> Unit,
+    onOpenTopicManagement: () -> Unit,
     onOpenInfo: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -146,6 +152,7 @@ fun ArticleListScreen(
                                         onFilter = { filterSheetOpen = true },
                                         onNotifications = { notificationSettingsOpen = true },
                                         onManageFeeds = onOpenFeedManagement,
+                                        onManageTopics = onOpenTopicManagement,
                                         onAppearance = { appearanceDialogOpen = true },
                                         onLanguage = { languageDialogOpen = true },
                                         onInfo = onOpenInfo,
@@ -163,11 +170,15 @@ fun ArticleListScreen(
                                     },
                                 )
                                 if (showScrollToTop) {
-                                    AssistChip(
-                                        onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } },
-                                        leadingIcon = { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null) },
-                                        label = { Text(stringResource(R.string.scroll_to_top)) },
-                                    )
+                                    TooltipBox(
+                                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                        tooltip = { PlainTooltip { Text(stringResource(R.string.scroll_to_top)) } },
+                                        state = rememberTooltipState(),
+                                    ) {
+                                        IconButton(onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } }) {
+                                            Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.scroll_to_top))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -275,6 +286,7 @@ private fun MainMenu(
     onFilter: () -> Unit,
     onNotifications: () -> Unit,
     onManageFeeds: () -> Unit,
+    onManageTopics: () -> Unit,
     onAppearance: () -> Unit,
     onLanguage: () -> Unit,
     onInfo: () -> Unit,
@@ -305,6 +317,11 @@ private fun MainMenu(
             text = { Text(stringResource(R.string.menu_manage_feeds)) },
             leadingIcon = { Icon(Icons.Filled.RssFeed, contentDescription = null) },
             onClick = { onDismiss(); onManageFeeds() },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.menu_manage_topics)) },
+            leadingIcon = { Icon(Icons.Filled.Label, contentDescription = null) },
+            onClick = { onDismiss(); onManageTopics() },
         )
         HorizontalDivider()
         DropdownMenuItem(

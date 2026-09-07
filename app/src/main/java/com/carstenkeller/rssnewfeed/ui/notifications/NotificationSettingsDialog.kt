@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPresetsStore
 import com.carstenkeller.rssnewfeed.data.notifications.NotificationPreferences
-import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
+import com.carstenkeller.rssnewfeed.data.topics.TopicsStore
 
 @Composable
 fun NotificationSettingsDialog(onDismiss: () -> Unit) {
@@ -38,6 +38,7 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
     var watchedTopics by remember { mutableStateOf(NotificationPreferences.getWatchedTopics(context)) }
     var watchedPresetIds by remember { mutableStateOf(NotificationPreferences.getWatchedPresetIds(context)) }
     val presets = remember { FilterPresetsStore.getAll(context) }
+    val topics = remember { TopicsStore.getTopics(context) }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -60,7 +61,7 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
                     stringResource(R.string.notification_topics_hint),
                     style = MaterialTheme.typography.bodySmall,
                 )
-                PREDEFINED_TOPICS.forEach { topic ->
+                topics.forEach { topic ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(),

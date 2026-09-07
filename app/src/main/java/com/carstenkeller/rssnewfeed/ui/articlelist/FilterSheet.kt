@@ -38,11 +38,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
-import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
+import com.carstenkeller.rssnewfeed.data.topics.TopicsStore
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -247,8 +248,10 @@ private fun SectionLabel(text: String) {
 
 @Composable
 private fun TopicChipRow(selected: Set<String>, onToggle: (String) -> Unit) {
+    val context = LocalContext.current
+    val topics = remember { TopicsStore.getTopics(context) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        PREDEFINED_TOPICS.forEach { topic ->
+        topics.forEach { topic ->
             FilterChip(
                 selected = topic in selected,
                 onClick = { onToggle(topic) },

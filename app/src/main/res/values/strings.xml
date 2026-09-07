@@ -35,6 +35,9 @@
     <string name="toggle_show_unread">Ungelesen anzeigen</string>
     <string name="toggle_show_read">Gelesen anzeigen</string>
     <string name="scroll_to_top">Nach oben</string>
+    <string name="menu_manage_topics">Themen verwalten</string>
+    <string name="topics_hint">Diese Themen stehen bei Feeds, Filtern und Benachrichtigungen zur Auswahl. Du kannst eigene ergänzen — z. B. zusätzlich zu „Auto" ein „Cars", wenn du sowohl deutsch- als auch englischsprachige Feeds liest.</string>
+    <string name="topic_name_label">Themenname</string>
 
     <!-- Article list empty states -->
     <string name="empty_no_feeds">Noch keine Feeds hinzugefügt. Tippe oben auf das Menü-Symbol.</string>

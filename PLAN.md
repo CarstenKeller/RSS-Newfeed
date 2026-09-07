@@ -245,6 +245,31 @@ Stand Build 11: umgesetzt, noch nicht auf dem Gerät getestet.
   (TopicMatching) bleibt unverändert deutschsprachig, da sie auf den
   Inhalt deutschsprachiger Feeds zielt – unabhängig von der App-Sprache.
 
+## Iteration 9 – Nutzerverwaltete Themen, Mehrfachauswahl, UI-Feinschliff
+
+Stand Build 12: umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] Themen sind jetzt vom Nutzer verwaltbar statt fest hinterlegt: neuer
+      Menüpunkt "Themen verwalten" (Hamburger-Menü) zum Hinzufügen und
+      Entfernen eigener Themen. Das löst das Sprachproblem aus Build 11
+      direkter, als eine Übersetzung es könnte: Du kannst z. B. zusätzlich
+      zu "Auto" ein eigenes "Cars" anlegen, um gezielt englischsprachige
+      Feeds danach zu filtern, statt beide Sprachen unter einem Begriff
+      zusammenzufassen.
+      Hinweis: Für frei hinzugefügte Themen greift die deutsche
+      Stichwort-Zusatzklassifikation (TopicMatching) nicht automatisch –
+      die Zuordnung erfolgt dann über das Feed-Thema oder `<category>`-Tags
+      des Feeds.
+- [x] Feeds können jetzt mehrere Themen gleichzeitig zugewiesen bekommen
+      (bisher nur eines). Datenbank-Migration (Version 2 auf 3) überführt
+      bestehende Einzel-Themen verlustfrei in das neue Mehrfachfeld; die
+      alte Spalte bleibt unangetastet im Schema stehen (kein Datenverlust,
+      siehe Vorgabe zu Room-Migrationen).
+- [x] Bugfix: Der "Nach oben"-Button war höher als der benachbarte
+      "Gelesen anzeigen"-Chip, weil sein Text auf zwei Zeilen umbrach.
+      Jetzt ein reiner Icon-Button mit Tooltip-Text, analog zu den
+      OPML-Import-/Export-Buttons.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

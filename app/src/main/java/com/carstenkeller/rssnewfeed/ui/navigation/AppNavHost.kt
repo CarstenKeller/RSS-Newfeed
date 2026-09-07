@@ -19,9 +19,11 @@ import com.carstenkeller.rssnewfeed.ui.articlelist.ArticleListScreen
 import com.carstenkeller.rssnewfeed.ui.articlelist.ArticleListViewModel
 import com.carstenkeller.rssnewfeed.ui.feedmanagement.FeedManagementScreen
 import com.carstenkeller.rssnewfeed.ui.feedmanagement.FeedManagementViewModel
+import com.carstenkeller.rssnewfeed.ui.topics.TopicManagementScreen
 
 private const val ROUTE_LIST = "list"
 private const val ROUTE_FEEDS = "feeds"
+private const val ROUTE_TOPICS = "topics"
 private const val ROUTE_INFO = "info"
 private const val ROUTE_ARTICLE = "article/{articleId}"
 
@@ -39,6 +41,7 @@ fun AppNavHost(repository: FeedRepository) {
                 viewModel = viewModel,
                 onOpenArticle = { id -> navController.navigate("article/$id") },
                 onOpenFeedManagement = { navController.navigate(ROUTE_FEEDS) },
+                onOpenTopicManagement = { navController.navigate(ROUTE_TOPICS) },
                 onOpenInfo = { navController.navigate(ROUTE_INFO) },
             )
         }
@@ -57,6 +60,9 @@ fun AppNavHost(repository: FeedRepository) {
                 factory = viewModelFactory { initializer { FeedManagementViewModel(repository) } },
             )
             FeedManagementScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+        }
+        composable(ROUTE_TOPICS) {
+            TopicManagementScreen(onBack = { navController.popBackStack() })
         }
         composable(ROUTE_INFO) {
             val viewModel: InfoViewModel = viewModel()

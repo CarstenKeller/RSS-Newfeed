@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.carstenkeller.rssnewfeed.ui.feedmanagement
 
 import android.content.Intent
@@ -5,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,9 +24,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,7 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.db.FeedEntity
-import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
+import com.carstenkeller.rssnewfeed.data.topics.TopicsStore
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -176,7 +178,7 @@ fun FeedManagementScreen(
                                 Text(feed.url, maxLines = 1)
                                 AssistChip(
                                     onClick = { feedToEdit = feed },
-                                    label = { Text(feed.topicTag ?: noTopicLabel) },
+                                    label = { Text(feedTopicsLabel(feed.topicTags, noTopicLabel)) },
                                     modifier = Modifier.padding(top = 4.dp),
                                 )
                             }
@@ -202,14 +204,19 @@ fun FeedManagementScreen(
         EditFeedDialog(
             feed = feed,
             onDismiss = { feedToEdit = null },
-            onConfirm = { newTitle, topic ->
+            onConfirm = { newTitle, topics ->
                 viewModel.renameFeed(feed, newTitle)
-                viewModel.setFeedTopic(feed, topic)
+                viewModel.setFeedTopics(feed, topics)
                 feedToEdit = null
             },
         )
     }
 }
+
+private fun feedTopicsLabel(topicTags: String, noTopicLabel: String): String =
+    topicTags.split(",").map { it.trim() }.filter { it.isNotBlank() }
+        .joinToString(", ")
+        .ifBlank { noTopicLabel }
 
 @Composable
 private fun feedStatusMessageText(message: FeedStatusMessage): String = when (message) {
@@ -229,12 +236,14 @@ private fun feedStatusMessageText(message: FeedStatusMessage): String = when (me
 private fun EditFeedDialog(
     feed: FeedEntity,
     onDismiss: () -> Unit,
-    onConfirm: (String, String?) -> Unit,
+    onConfirm: (String, Set<String>) -> Unit,
 ) {
+    val context = LocalContext.current
     var title by remember { mutableStateOf(feed.title) }
-    var topic by remember { mutableStateOf(feed.topicTag) }
-    var topicMenuOpen by remember { mutableStateOf(false) }
-    val noTopicLabel = stringResource(R.string.topic_none)
+    var selectedTopics by remember {
+        mutableStateOf(feed.topicTags.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet())
+    }
+    val availableTopics = remember { TopicsStore.getTopics(context) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -249,20 +258,21 @@ private fun EditFeedDialog(
                 )
                 Column(modifier = Modifier.padding(top = 12.dp)) {
                     Text(stringResource(R.string.label_topic), style = MaterialTheme.typography.labelMedium)
-                    AssistChip(
-                        onClick = { topicMenuOpen = true },
-                        label = { Text(topic ?: noTopicLabel) },
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(top = 4.dp),
-                    )
-                    DropdownMenu(expanded = topicMenuOpen, onDismissRequest = { topicMenuOpen = false }) {
-                        DropdownMenuItem(
-                            text = { Text(noTopicLabel) },
-                            onClick = { topic = null; topicMenuOpen = false },
-                        )
-                        PREDEFINED_TOPICS.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = { topic = option; topicMenuOpen = false },
+                    ) {
+                        availableTopics.forEach { option ->
+                            FilterChip(
+                                selected = option in selectedTopics,
+                                onClick = {
+                                    selectedTopics = if (option in selectedTopics) {
+                                        selectedTopics - option
+                                    } else {
+                                        selectedTopics + option
+                                    }
+                                },
+                                label = { Text(option) },
                             )
                         }
                     }
@@ -270,7 +280,7 @@ private fun EditFeedDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(title, topic) }) { Text(stringResource(R.string.action_save)) }
+            TextButton(onClick = { onConfirm(title, selectedTopics) }) { Text(stringResource(R.string.action_save)) }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
