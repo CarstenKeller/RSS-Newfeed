@@ -108,6 +108,26 @@ gibt es nur noch, wenn du neue Wünsche hast.
       Bilder auch offline angezeigt werden – Listen-Vorschaubilder cacht Coil
       bereits von sich aus)
 
+## Iteration 4 – Feedback nach Build 5 (Filter-UX, Favoriten)
+
+Stand Build 6: alle Punkte umgesetzt, noch nicht auf dem Gerät getestet.
+Kein ursprünglicher Plan-Punkt, sondern direktes Nutzer-Feedback nach dem
+ersten intensiveren Gebrauch mit mehreren Quellen/Themen.
+
+- [x] Filter-Chips (Herausgeber, Themen, Sprache) brechen jetzt um, statt bei
+      vielen Einträgen horizontal scrollen zu müssen (wichtig auf schmalen
+      Displays mit vielen Quellen)
+- [x] Bugfix: Von/Bis-Datum ließ sich nach Auswahl nicht mehr einzeln auf
+      neutral zurücksetzen – je Feld jetzt ein eigenes Zurücksetzen-Symbol
+- [x] Filter-Favoriten: aktuelle Themen-/Herausgeber-/Sprachauswahl unter
+      einem Namen speichern (z. B. "Politik & Wirtschaft", "Wissenschaft")
+      und per Tippen wieder anwenden – als Schnellauswahl-Leiste direkt in
+      der Artikelliste UND zur Verwaltung (speichern/löschen) im Filter-Sheet.
+      Bewusst nicht Teil eines Favoriten: Lesestatus (bleibt laut Vorgabe ein
+      einziger gemeinsamer "Gelesen"-Bereich) und Zeitraum (wird schnell veraltet)
+- [x] Suche: eigener Bereich-Schalter (Alle/Ungelesen/Gelesen), unabhängig
+      vom normalen Gelesen-Umschalter der Übersicht
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

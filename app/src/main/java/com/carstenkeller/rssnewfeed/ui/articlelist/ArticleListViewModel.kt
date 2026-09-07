@@ -1,9 +1,12 @@
 package com.carstenkeller.rssnewfeed.ui.articlelist
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
 import com.carstenkeller.rssnewfeed.data.db.FeedEntity
+import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
+import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPresetsStore
 import com.carstenkeller.rssnewfeed.data.repository.FeedRepository
 import com.carstenkeller.rssnewfeed.domain.TopicMatching
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+enum class SearchScope { ALLE, UNGELESEN, GELESEN }
 
 data class ArticleFilterState(
     val feedId: Long? = null,
@@ -34,14 +39,21 @@ data class ArticleListUiState(
     val feeds: List<FeedEntity> = emptyList(),
     val filter: ArticleFilterState = ArticleFilterState(),
     val searchQuery: String = "",
+    val searchScope: SearchScope = SearchScope.ALLE,
+    val presets: List<FilterPreset> = emptyList(),
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
 )
 
-class ArticleListViewModel(private val repository: FeedRepository) : ViewModel() {
+class ArticleListViewModel(
+    private val repository: FeedRepository,
+    private val appContext: Context,
+) : ViewModel() {
 
     private val filterState = MutableStateFlow(ArticleFilterState())
     private val searchQuery = MutableStateFlow("")
+    private val searchScope = MutableStateFlow(SearchScope.ALLE)
+    private val presets = MutableStateFlow(FilterPresetsStore.getAll(appContext))
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
 
@@ -49,12 +61,24 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
         repository.visibleArticles,
         repository.feeds,
         filterState,
-        searchQuery,
+        combine(searchQuery, searchScope, presets, ::Triple),
         isRefreshing,
-    ) { articles, feeds, filter, query, refreshing ->
+    ) { articles, feeds, filter, searchAndPresets, refreshing ->
+        val (query, scope, presetList) = searchAndPresets
+        val isSearching = query.isNotBlank()
         val filtered = articles
             .filter { filter.feedId == null || it.feedId == filter.feedId }
-            .filter { it.isRead == filter.showRead }
+            .filter {
+                if (isSearching) {
+                    when (scope) {
+                        SearchScope.ALLE -> true
+                        SearchScope.UNGELESEN -> !it.isRead
+                        SearchScope.GELESEN -> it.isRead
+                    }
+                } else {
+                    it.isRead == filter.showRead
+                }
+            }
             .filter { filter.includedTopics.isEmpty() || matchesAnyTopic(it, filter.includedTopics) }
             .filter { filter.excludedTopics.isEmpty() || !matchesAnyTopic(it, filter.excludedTopics) }
             .filter { filter.language == null || it.publisherLanguage == filter.language }
@@ -70,6 +94,8 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
             feeds = feeds,
             filter = filter,
             searchQuery = query,
+            searchScope = scope,
+            presets = presetList,
             isRefreshing = refreshing,
             errorMessage = errorMessage.value,
         )
@@ -113,6 +139,10 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
         searchQuery.value = query
     }
 
+    fun setSearchScope(scope: SearchScope) {
+        searchScope.value = scope
+    }
+
     fun toggleIncludedTopic(topic: String) {
         val current = filterState.value.includedTopics
         filterState.value = filterState.value.copy(
@@ -137,6 +167,34 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
 
     fun resetFilters() {
         filterState.value = ArticleFilterState()
+    }
+
+    fun savePreset(name: String) {
+        val current = filterState.value
+        FilterPresetsStore.add(
+            appContext,
+            name = name,
+            feedId = current.feedId,
+            includedTopics = current.includedTopics,
+            excludedTopics = current.excludedTopics,
+            language = current.language,
+        )
+        presets.value = FilterPresetsStore.getAll(appContext)
+    }
+
+    /** Applies a preset's topic/publisher/language selection; read state and date range are untouched. */
+    fun applyPreset(preset: FilterPreset) {
+        filterState.value = filterState.value.copy(
+            feedId = preset.feedId,
+            includedTopics = preset.includedTopics,
+            excludedTopics = preset.excludedTopics,
+            language = preset.language,
+        )
+    }
+
+    fun deletePreset(id: String) {
+        FilterPresetsStore.delete(appContext, id)
+        presets.value = FilterPresetsStore.getAll(appContext)
     }
 
     /** Swiping an article away marks it read (moves it to "Gelesen") rather than deleting it. */

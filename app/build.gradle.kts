@@ -15,8 +15,8 @@ android {
         applicationId = "com.carstenkeller.rssnewfeed"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.5.0-iter3-complete"
+        versionCode = 6
+        versionName = "0.6.0-filter-ux"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "BUILD_NUMBER", "$versionCode")

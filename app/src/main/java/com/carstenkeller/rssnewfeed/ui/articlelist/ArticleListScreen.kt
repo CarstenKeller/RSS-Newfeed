@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
+import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
 import com.carstenkeller.rssnewfeed.ui.notifications.NotificationSettingsDialog
 import com.carstenkeller.rssnewfeed.ui.theme.readHighlightColor
 import java.time.Instant
@@ -132,12 +133,19 @@ fun ArticleListScreen(
                         }
                     },
                 )
-                ReadFilterRow(
-                    showRead = state.filter.showRead,
-                    onToggle = viewModel::setShowRead,
-                    showScrollToTop = showScrollToTop,
-                    onScrollToTop = { coroutineScope.launch { listState.animateScrollToItem(0) } },
-                )
+                if (searchExpanded) {
+                    SearchScopeRow(scope = state.searchScope, onSelect = viewModel::setSearchScope)
+                } else {
+                    ReadFilterRow(
+                        showRead = state.filter.showRead,
+                        onToggle = viewModel::setShowRead,
+                        showScrollToTop = showScrollToTop,
+                        onScrollToTop = { coroutineScope.launch { listState.animateScrollToItem(0) } },
+                    )
+                    if (state.presets.isNotEmpty()) {
+                        PresetQuickRow(presets = state.presets, onApply = viewModel::applyPreset)
+                    }
+                }
             }
         },
     ) { innerPadding ->
@@ -186,11 +194,64 @@ fun ArticleListScreen(
             onSelectLanguage = viewModel::setLanguageFilter,
             onSetDateRange = viewModel::setDateRange,
             onReset = viewModel::resetFilters,
+            onApplyPreset = viewModel::applyPreset,
+            onSavePreset = viewModel::savePreset,
+            onDeletePreset = viewModel::deletePreset,
         )
     }
 
     if (notificationSettingsOpen) {
         NotificationSettingsDialog(onDismiss = { notificationSettingsOpen = false })
+    }
+}
+
+@Composable
+private fun SearchScopeRow(scope: SearchScope, onSelect: (SearchScope) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            "Durchsuchen:",
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        FilterChip(
+            selected = scope == SearchScope.ALLE,
+            onClick = { onSelect(SearchScope.ALLE) },
+            label = { Text("Alle") },
+        )
+        FilterChip(
+            selected = scope == SearchScope.UNGELESEN,
+            onClick = { onSelect(SearchScope.UNGELESEN) },
+            label = { Text("Ungelesen") },
+        )
+        FilterChip(
+            selected = scope == SearchScope.GELESEN,
+            onClick = { onSelect(SearchScope.GELESEN) },
+            label = { Text("Gelesen") },
+        )
+    }
+}
+
+@Composable
+private fun PresetQuickRow(
+    presets: List<FilterPreset>,
+    onApply: (FilterPreset) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        presets.forEach { preset ->
+            AssistChip(onClick = { onApply(preset) }, label = { Text(preset.name) })
+        }
     }
 }
 

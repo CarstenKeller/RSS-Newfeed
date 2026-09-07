@@ -1,6 +1,7 @@
 package com.carstenkeller.rssnewfeed.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -27,11 +28,12 @@ private const val ROUTE_ARTICLE = "article/{articleId}"
 @Composable
 fun AppNavHost(repository: FeedRepository) {
     val navController = rememberNavController()
+    val appContext = LocalContext.current.applicationContext
 
     NavHost(navController = navController, startDestination = ROUTE_LIST) {
         composable(ROUTE_LIST) {
             val viewModel: ArticleListViewModel = viewModel(
-                factory = viewModelFactory { initializer { ArticleListViewModel(repository) } },
+                factory = viewModelFactory { initializer { ArticleListViewModel(repository, appContext) } },
             )
             ArticleListScreen(
                 viewModel = viewModel,
