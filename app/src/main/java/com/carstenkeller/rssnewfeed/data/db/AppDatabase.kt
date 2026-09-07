@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [FeedEntity::class, ArticleEntity::class], version = 1, exportSchema = false)
+@Database(entities = [FeedEntity::class, ArticleEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun feedDao(): FeedDao
     abstract fun articleDao(): ArticleDao
@@ -19,7 +19,11 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "rss-newfeed.db",
-                ).build().also { instance = it }
+                )
+                    // Pre-release app, no schema migrations shipped yet: dropping and
+                    // recreating on a version bump is an accepted, explicit trade-off.
+                    .fallbackToDestructiveMigration()
+                    .build().also { instance = it }
             }
     }
 }

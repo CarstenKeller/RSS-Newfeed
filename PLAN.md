@@ -28,18 +28,21 @@ diese Datei + nächster offener Schritt).
 
 ## Iteration 1 – MVP (vollständig nutzbare Basisfunktionen)
 
-Stand Build 1: Alle Punkte sind implementiert und der CI-Build kompiliert und
-signiert die APK erfolgreich. Was das NICHT abdeckt: einen manuellen Test auf
-einem echten Gerät/Emulator (dazu fehlt in dieser Sandbox die Möglichkeit) –
-insbesondere das Edge-to-edge-Verhalten und das RSS-Parsing gegen echte Feeds
-solltest du beim ersten Start prüfen und mir rückmelden.
+Stand Build 2: Auf Build 1 hin gab es echtes Nutzer-Feedback (zwei reale
+RSS-Feeds getestet) mit zwei Bugs, beide behoben:
+- Herausgeber-Name zeigte die rohe Feed-URL statt eines lesbaren Titels
+  (off-by-one bei der XML-Tiefenprüfung für RSS-2.0-Feeds).
+- Der rote Swipe-Hintergrund war dauerhaft sichtbar statt nur beim Wischen
+  (Karte und Hintergrund hatten unterschiedliche Ränder).
+Zusätzlich Farbschema komplett überarbeitet (kein zufälliges Wallpaper-Farbschema
+mehr, bewusste kontrastreiche Palette, Rot nur noch für die Lösch-Geste).
 
 - [x] Projekt-Grundgerüst (Gradle, Compose, Room, WorkManager, Navigation)
 - [x] Debug-Signing-Konfiguration fix (konsistenter Keystore für Update-Erkennung)
 - [x] Datenmodell: FeedSource, Article (Room-Entities + DAO)
 - [x] RSS/Atom-Parser (Titel, Bild, Zusammenfassung, Volltext falls vorhanden,
-      Herausgeber, Datum, Link, Kategorie) – kompiliert, noch nicht gegen
-      echte Feeds auf einem Gerät getestet
+      Herausgeber, Datum, Link, Kategorie) – Feed-Titel-Bug behoben, gegen
+      zwei echte Feeds (n-tv, tagesschau) erfolgreich getestet
 - [x] Feed-Verwaltung: Hinzufügen/Bearbeiten/Entfernen von Feed-URLs
 - [x] Feed-Refresh: manuell (Pull-to-Refresh) + periodisch im Hintergrund
 - [x] Artikel-Liste: chronologisch (neueste zuerst), Bild + Titel + max.
@@ -49,22 +52,28 @@ solltest du beim ersten Start prüfen und mir rückmelden.
       hellgrüne Hervorhebung in der Liste
 - [x] Swipe-to-dismiss (nach rechts) zum dauerhaften Ausblenden von Artikeln
 - [x] Basisfilter: nach Herausgeber (Feed) und Gelesen/Ungelesen
-- [x] Edge-to-edge-Layout ohne Überlappung des Fußbereichs – Standard-Pattern
-      (enableEdgeToEdge + Scaffold-Insets) implementiert, visuell auf einem
-      echten Gerät noch nicht bestätigt
+- [x] Edge-to-edge-Layout ohne Überlappung des Fußbereichs – von dir bereits
+      erfolgreich getestet
 - [x] App-Info-Screen: Buildnummer, Anzeige dieser PLAN.md mit erledigten
       Punkten und nächstem Schritt
 
 ## Iteration 2 – Themen- und Filtersystem
 
-- [ ] Themen-Tag pro Feed (manuell zuweisbar: Politik, Weltgeschehen,
-      Wirtschaft, Sport, …)
-- [ ] Auswertung vorhandener `<category>`-Tags aus dem Feed als Zusatzfilter
-- [ ] Filter-UI: Themen ein-/ausschließen (z. B. Sport ausblenden)
-- [ ] Sprachfilter (pro Feed hinterlegt)
-- [ ] Datums-/Zeitraumfilter
-- [ ] Kombinierbare Filter (Herausgeber + Thema + Datum + Sprache gleichzeitig)
-- [ ] Dauerhafte Persistenz verworfener Artikel
+Stand Build 2: implementiert, aber (wie schon bei Build 1) nur CI-kompiliert,
+noch nicht von dir auf dem Gerät getestet – bitte insbesondere die
+Themen-Zuweisung und das Filter-Sheet ausprobieren.
+
+- [x] Themen-Tag pro Feed (manuell zuweisbar: Politik, Weltgeschehen,
+      Wirtschaft, Sport, Kultur, Wissenschaft & Technik, Sonstiges) –
+      Zuweisung über Bearbeiten-Dialog in der Feed-Verwaltung
+- [x] Auswertung vorhandener `<category>`-Tags aus dem Feed als Zusatzfilter
+- [x] Filter-UI: Themen ein-/ausschließen (z. B. Sport ausblenden) – neues
+      Filter-Sheet über das Filter-Icon (rot hervorgehoben, wenn ein Filter aktiv ist)
+- [x] Sprachfilter (pro Feed hinterlegt)
+- [x] Datums-/Zeitraumfilter (Von/Bis über Datumsauswahl)
+- [x] Kombinierbare Filter (Herausgeber + Thema + Datum + Sprache gleichzeitig)
+- [x] Dauerhafte Persistenz verworfener Artikel (bereits seit Iteration 1
+      durch die Room-Datenbank gegeben)
 
 ## Iteration 3 – Ausbaustufen (optional, nach Bedarf)
 

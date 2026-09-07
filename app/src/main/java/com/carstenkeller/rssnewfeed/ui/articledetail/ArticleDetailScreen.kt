@@ -39,6 +39,7 @@ fun ArticleDetailScreen(
         topBar = {
             TopAppBar(
                 title = { Text(article?.title.orEmpty(), maxLines = 1) },
+                colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")

@@ -31,6 +31,8 @@ data class ArticleEntity(
     val link: String,
     val publishedAt: Long,
     val fetchedAt: Long,
+    /** Comma-joined `<category>` tags from the feed item, used as a secondary topic filter signal. */
+    val categories: String = "",
     val isRead: Boolean = false,
     val isDismissed: Boolean = false,
 )

@@ -9,6 +9,7 @@ data class FeedEntity(
     val url: String,
     val title: String,
     val language: String? = null,
+    val topicTag: String? = null,
     val addedAt: Long,
     val lastFetchedAt: Long? = null,
     val lastFetchError: String? = null,

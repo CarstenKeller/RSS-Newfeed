@@ -66,6 +66,7 @@ class FeedRepository(
                 link = item.link,
                 publishedAt = item.publishedAt ?: now,
                 fetchedAt = now,
+                categories = item.categories.joinToString(","),
             )
         }
         articleDao.insertAll(entities)

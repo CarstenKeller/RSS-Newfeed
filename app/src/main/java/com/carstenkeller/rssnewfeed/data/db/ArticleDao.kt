@@ -13,7 +13,8 @@ interface ArticleDao {
         """
         SELECT a.id AS id, a.feedId AS feedId, a.title AS title, a.summary AS summary,
                a.imageUrl AS imageUrl, a.link AS link, a.publishedAt AS publishedAt,
-               a.isRead AS isRead, f.title AS publisherName
+               a.isRead AS isRead, f.title AS publisherName, f.topicTag AS publisherTopicTag,
+               f.language AS publisherLanguage, a.categories AS categories
         FROM articles a
         INNER JOIN feeds f ON f.id = a.feedId
         WHERE a.isDismissed = 0

@@ -18,8 +18,6 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -40,16 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
+import com.carstenkeller.rssnewfeed.ui.theme.readHighlightColor
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
-private val ReadHighlight = Color(0xFFDDF5DD)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,24 +56,26 @@ fun ArticleListScreen(
     onOpenInfo: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
+    var filterSheetOpen by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             Column {
                 TopAppBar(
                     title = { Text("RSS Newfeed") },
+                    colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                     actions = {
-                        var filterMenuOpen by remember { mutableStateOf(false) }
-                        IconButton(onClick = { filterMenuOpen = true }) {
-                            Icon(Icons.Filled.FilterList, contentDescription = "Filter")
+                        IconButton(onClick = { filterSheetOpen = true }) {
+                            Icon(
+                                Icons.Filled.FilterList,
+                                contentDescription = "Filter",
+                                tint = if (state.filter.isDefault) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                },
+                            )
                         }
-                        FeedFilterMenu(
-                            expanded = filterMenuOpen,
-                            onDismiss = { filterMenuOpen = false },
-                            feeds = state.feeds,
-                            selectedFeedId = state.filter.feedId,
-                            onSelectFeed = { viewModel.setFeedFilter(it); filterMenuOpen = false },
-                        )
                         IconButton(onClick = onOpenFeedManagement) {
                             Icon(Icons.Filled.RssFeed, contentDescription = "Feeds verwalten")
                         }
@@ -125,21 +123,18 @@ fun ArticleListScreen(
             }
         }
     }
-}
 
-@Composable
-private fun FeedFilterMenu(
-    expanded: Boolean,
-    onDismiss: () -> Unit,
-    feeds: List<com.carstenkeller.rssnewfeed.data.db.FeedEntity>,
-    selectedFeedId: Long?,
-    onSelectFeed: (Long?) -> Unit,
-) {
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
-        DropdownMenuItem(text = { Text("Alle Herausgeber") }, onClick = { onSelectFeed(null) })
-        feeds.forEach { feed ->
-            DropdownMenuItem(text = { Text(feed.title) }, onClick = { onSelectFeed(feed.id) })
-        }
+    if (filterSheetOpen) {
+        FilterSheet(
+            state = state,
+            onDismiss = { filterSheetOpen = false },
+            onSelectFeed = viewModel::setFeedFilter,
+            onToggleIncludedTopic = viewModel::toggleIncludedTopic,
+            onToggleExcludedTopic = viewModel::toggleExcludedTopic,
+            onSelectLanguage = viewModel::setLanguageFilter,
+            onSetDateRange = viewModel::setDateRange,
+            onReset = viewModel::resetFilters,
+        )
     }
 }
 
@@ -179,34 +174,42 @@ private fun DismissibleArticleRow(
         },
     )
 
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromEndToStart = false,
-        enableDismissFromStartToEnd = true,
-        backgroundContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.errorContainer)
-                    .padding(horizontal = 20.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = "Ausblenden")
-            }
-        },
-    ) {
-        ArticleRow(article = article, onClick = onClick)
+    // Both backgroundContent and the foreground content must share exactly the same
+    // bounds, or the background peeks out permanently at rest instead of only while
+    // dragging. So the outer margin lives here, on the whole swipe box, never on the
+    // Card alone.
+    Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)) {
+        SwipeToDismissBox(
+            state = dismissState,
+            enableDismissFromEndToStart = false,
+            enableDismissFromStartToEnd = true,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.medium)
+                        .padding(horizontal = 20.dp),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Ausblenden",
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
+            },
+        ) {
+            ArticleRow(article = article, onClick = onClick)
+        }
     }
 }
 
 @Composable
 private fun ArticleRow(article: ArticleListItem, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(),
         colors = androidx.compose.material3.CardDefaults.cardColors(
-            containerColor = if (article.isRead) ReadHighlight else MaterialTheme.colorScheme.surface,
+            containerColor = if (article.isRead) readHighlightColor() else MaterialTheme.colorScheme.surface,
         ),
         onClick = onClick,
     ) {
@@ -238,10 +241,20 @@ private fun ArticleRow(article: ArticleListItem, onClick: () -> Unit) {
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(text = article.publisherName, style = MaterialTheme.typography.labelSmall)
-                    Text(text = formatTimestamp(article.publishedAt), style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = "Quelle: ${article.publisherName}",
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = formatTimestamp(article.publishedAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                    )
                 }
             }
         }

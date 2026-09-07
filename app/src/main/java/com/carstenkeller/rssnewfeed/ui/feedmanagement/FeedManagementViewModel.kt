@@ -51,6 +51,10 @@ class FeedManagementViewModel(private val repository: FeedRepository) : ViewMode
         viewModelScope.launch { repository.updateFeed(feed.copy(title = newTitle.trim())) }
     }
 
+    fun setFeedTopic(feed: FeedEntity, topic: String?) {
+        viewModelScope.launch { repository.updateFeed(feed.copy(topicTag = topic)) }
+    }
+
     fun removeFeed(feed: FeedEntity) {
         viewModelScope.launch { repository.removeFeed(feed) }
     }

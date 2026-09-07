@@ -17,7 +17,16 @@ enum class ReadFilter { ALLE, UNGELESEN, GELESEN }
 data class ArticleFilterState(
     val feedId: Long? = null,
     val readFilter: ReadFilter = ReadFilter.ALLE,
-)
+    val includedTopics: Set<String> = emptySet(),
+    val excludedTopics: Set<String> = emptySet(),
+    val language: String? = null,
+    val dateFromMillis: Long? = null,
+    val dateToMillis: Long? = null,
+) {
+    val isDefault: Boolean
+        get() = feedId == null && readFilter == ReadFilter.ALLE && includedTopics.isEmpty() &&
+            excludedTopics.isEmpty() && language == null && dateFromMillis == null && dateToMillis == null
+}
 
 data class ArticleListUiState(
     val articles: List<ArticleListItem> = emptyList(),
@@ -48,6 +57,11 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
                     ReadFilter.GELESEN -> it.isRead
                 }
             }
+            .filter { filter.includedTopics.isEmpty() || matchesAnyTopic(it, filter.includedTopics) }
+            .filter { filter.excludedTopics.isEmpty() || !matchesAnyTopic(it, filter.excludedTopics) }
+            .filter { filter.language == null || it.publisherLanguage == filter.language }
+            .filter { filter.dateFromMillis == null || it.publishedAt >= filter.dateFromMillis }
+            .filter { filter.dateToMillis == null || it.publishedAt <= filter.dateToMillis }
         ArticleListUiState(
             articles = filtered,
             feeds = feeds,
@@ -59,6 +73,14 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
 
     init {
         refresh()
+    }
+
+    /** A topic matches if it's the feed's assigned topic, or one of the item's own `<category>` tags. */
+    private fun matchesAnyTopic(item: ArticleListItem, topics: Set<String>): Boolean {
+        if (item.publisherTopicTag != null && item.publisherTopicTag in topics) return true
+        if (item.categories.isBlank()) return false
+        val categories = item.categories.split(",")
+        return topics.any { topic -> categories.any { it.contains(topic, ignoreCase = true) } }
     }
 
     fun refresh() {
@@ -81,6 +103,32 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
 
     fun setReadFilter(readFilter: ReadFilter) {
         filterState.value = filterState.value.copy(readFilter = readFilter)
+    }
+
+    fun toggleIncludedTopic(topic: String) {
+        val current = filterState.value.includedTopics
+        filterState.value = filterState.value.copy(
+            includedTopics = if (topic in current) current - topic else current + topic,
+        )
+    }
+
+    fun toggleExcludedTopic(topic: String) {
+        val current = filterState.value.excludedTopics
+        filterState.value = filterState.value.copy(
+            excludedTopics = if (topic in current) current - topic else current + topic,
+        )
+    }
+
+    fun setLanguageFilter(language: String?) {
+        filterState.value = filterState.value.copy(language = language)
+    }
+
+    fun setDateRange(fromMillis: Long?, toMillis: Long?) {
+        filterState.value = filterState.value.copy(dateFromMillis = fromMillis, dateToMillis = toMillis)
+    }
+
+    fun resetFilters() {
+        filterState.value = ArticleFilterState()
     }
 
     fun dismissArticle(articleId: Long) {

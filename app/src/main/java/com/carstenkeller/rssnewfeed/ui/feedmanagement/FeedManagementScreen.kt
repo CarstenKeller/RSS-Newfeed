@@ -13,8 +13,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.carstenkeller.rssnewfeed.data.db.FeedEntity
+import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,12 +48,13 @@ fun FeedManagementScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var newFeedUrl by remember { mutableStateOf("") }
-    var feedToRename by remember { mutableStateOf<FeedEntity?>(null) }
+    var feedToEdit by remember { mutableStateOf<FeedEntity?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Feeds verwalten") },
+                colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
@@ -99,11 +104,20 @@ fun FeedManagementScreen(
                 items(state.feeds, key = { it.id }) { feed ->
                     ListItem(
                         headlineContent = { Text(feed.title) },
-                        supportingContent = { Text(feed.url) },
+                        supportingContent = {
+                            Column {
+                                Text(feed.url, maxLines = 1)
+                                AssistChip(
+                                    onClick = { feedToEdit = feed },
+                                    label = { Text(feed.topicTag ?: "Kein Thema") },
+                                    modifier = Modifier.padding(top = 4.dp),
+                                )
+                            }
+                        },
                         trailingContent = {
                             Row {
-                                IconButton(onClick = { feedToRename = feed }) {
-                                    Icon(Icons.Filled.Edit, contentDescription = "Umbenennen")
+                                IconButton(onClick = { feedToEdit = feed }) {
+                                    Icon(Icons.Filled.Edit, contentDescription = "Bearbeiten")
                                 }
                                 IconButton(onClick = { viewModel.removeFeed(feed) }) {
                                     Icon(Icons.Filled.Delete, contentDescription = "Entfernen")
@@ -117,33 +131,65 @@ fun FeedManagementScreen(
         }
     }
 
-    feedToRename?.let { feed ->
-        RenameFeedDialog(
+    feedToEdit?.let { feed ->
+        EditFeedDialog(
             feed = feed,
-            onDismiss = { feedToRename = null },
-            onConfirm = { newTitle ->
+            onDismiss = { feedToEdit = null },
+            onConfirm = { newTitle, topic ->
                 viewModel.renameFeed(feed, newTitle)
-                feedToRename = null
+                viewModel.setFeedTopic(feed, topic)
+                feedToEdit = null
             },
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RenameFeedDialog(
+private fun EditFeedDialog(
     feed: FeedEntity,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (String, String?) -> Unit,
 ) {
     var title by remember { mutableStateOf(feed.title) }
+    var topic by remember { mutableStateOf(feed.topicTag) }
+    var topicMenuOpen by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Feed umbenennen") },
+        title = { Text("Feed bearbeiten") },
         text = {
-            OutlinedTextField(value = title, onValueChange = { title = it }, singleLine = true)
+            Column {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                )
+                Column(modifier = Modifier.padding(top = 12.dp)) {
+                    Text("Thema", style = MaterialTheme.typography.labelMedium)
+                    AssistChip(
+                        onClick = { topicMenuOpen = true },
+                        label = { Text(topic ?: "Kein Thema") },
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                    DropdownMenu(expanded = topicMenuOpen, onDismissRequest = { topicMenuOpen = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Kein Thema") },
+                            onClick = { topic = null; topicMenuOpen = false },
+                        )
+                        PREDEFINED_TOPICS.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = { topic = option; topicMenuOpen = false },
+                            )
+                        }
+                    }
+                }
+            }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(title) }) { Text("Speichern") }
+            TextButton(onClick = { onConfirm(title, topic) }) { Text("Speichern") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Abbrechen") }

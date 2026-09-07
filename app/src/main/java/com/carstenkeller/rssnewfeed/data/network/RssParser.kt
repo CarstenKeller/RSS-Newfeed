@@ -22,6 +22,7 @@ data class ParsedItem(
     val imageUrl: String?,
     val link: String,
     val publishedAt: Long?,
+    val categories: List<String> = emptyList(),
 )
 
 /**
@@ -35,22 +36,22 @@ object RssParser {
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
         parser.setInput(input, null)
 
-        var isAtom = false
         var feedTitle = ""
         var feedLanguage: String? = null
         val items = mutableListOf<ParsedItem>()
 
+        // Item/entry subtrees are fully consumed by parseRssItem/parseAtomEntry below and
+        // never seen here, so the first <title>/<language> this loop encounters is always
+        // the channel's (RSS) or feed's (Atom) own — no need to hard-code a nesting depth,
+        // which differs between RSS (channel > title, depth 3) and Atom (feed > title, depth 2).
         var eventType = parser.eventType
         while (eventType != XmlPullParser.END_DOCUMENT) {
             if (eventType == XmlPullParser.START_TAG) {
                 when (localName(parser.name)) {
-                    "feed" -> isAtom = true
                     "item" -> items += parseRssItem(parser)
                     "entry" -> items += parseAtomEntry(parser)
-                    "title" -> if (feedTitle.isEmpty() && parser.depth == 2) {
-                        feedTitle = readText(parser)
-                    }
-                    "language" -> if (parser.depth == 2) feedLanguage = readText(parser)
+                    "title" -> if (feedTitle.isEmpty()) feedTitle = readText(parser)
+                    "language" -> if (feedLanguage == null) feedLanguage = readText(parser)
                 }
             }
             eventType = parser.next()
@@ -67,6 +68,7 @@ object RssParser {
         var link = ""
         var imageUrl: String? = null
         var pubDate: Long? = null
+        val categories = mutableListOf<String>()
 
         val startDepth = parser.depth
         var eventType = parser.next()
@@ -79,6 +81,7 @@ object RssParser {
                     "encoded" -> contentEncoded = readText(parser)
                     "link" -> link = readText(parser)
                     "pubDate" -> pubDate = parseRfc822Date(readText(parser))
+                    "category" -> readText(parser).takeIf { it.isNotBlank() }?.let(categories::add)
                     "enclosure" -> {
                         val type = parser.getAttributeValue(null, "type") ?: ""
                         val url = parser.getAttributeValue(null, "url")
@@ -110,6 +113,7 @@ object RssParser {
             imageUrl = resolvedImage,
             link = link,
             publishedAt = pubDate,
+            categories = categories,
         )
     }
 
@@ -120,6 +124,7 @@ object RssParser {
         var content: String? = null
         var link = ""
         var published: Long? = null
+        val categories = mutableListOf<String>()
 
         val startDepth = parser.depth
         var eventType = parser.next()
@@ -134,6 +139,10 @@ object RssParser {
                         val href = parser.getAttributeValue(null, "href")
                         val rel = parser.getAttributeValue(null, "rel")
                         if (href != null && (rel == null || rel == "alternate")) link = href
+                        skipCurrentTag(parser)
+                    }
+                    "category" -> {
+                        parser.getAttributeValue(null, "term")?.takeIf { it.isNotBlank() }?.let(categories::add)
                         skipCurrentTag(parser)
                     }
                     "published", "updated" -> {
@@ -155,6 +164,7 @@ object RssParser {
             imageUrl = extractFirstImageUrl(body),
             link = link,
             publishedAt = published,
+            categories = categories,
         )
     }
 

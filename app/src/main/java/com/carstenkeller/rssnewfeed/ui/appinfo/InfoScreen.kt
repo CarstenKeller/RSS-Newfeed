@@ -44,6 +44,7 @@ fun InfoScreen(
         topBar = {
             TopAppBar(
                 title = { Text("App-Info") },
+                colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
