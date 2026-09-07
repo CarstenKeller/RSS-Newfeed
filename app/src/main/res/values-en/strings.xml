@@ -1,0 +1,109 @@
+<resources>
+    <string name="app_name">RSS Newsfeed</string>
+
+    <!-- Shared / generic -->
+    <string name="action_back">Back</string>
+    <string name="action_done">Done</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_add">Add</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_apply">Apply</string>
+    <string name="label_all">All</string>
+    <string name="label_name">Name</string>
+    <string name="label_topic">Topic</string>
+    <string name="topic_none">No topic</string>
+    <string name="version_build_label">Version %1$s · Build %2$s</string>
+
+    <!-- Article list header / hamburger menu -->
+    <string name="menu_cd">Menu</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_filter">Filter</string>
+    <string name="menu_filter_active">Filter (active)</string>
+    <string name="menu_notifications">Topic notifications</string>
+    <string name="menu_manage_feeds">Manage feeds</string>
+    <string name="menu_appearance">Appearance</string>
+    <string name="menu_language">Language</string>
+
+    <!-- Search panel -->
+    <string name="search_placeholder">Title, summary …</string>
+    <string name="search_close_cd">Close search</string>
+    <string name="filter_unread">Unread</string>
+    <string name="filter_read">Read</string>
+    <string name="toggle_show_unread">Show unread</string>
+    <string name="toggle_show_read">Show read</string>
+    <string name="scroll_to_top">Scroll to top</string>
+
+    <!-- Article list empty states -->
+    <string name="empty_no_feeds">No feeds added yet. Tap the menu icon above.</string>
+    <string name="empty_no_search_results">No matches for “%1$s”.</string>
+    <string name="empty_no_read_articles">No read articles yet.</string>
+    <string name="empty_all_read">All caught up — no unread articles.</string>
+
+    <!-- Article card -->
+    <string name="mark_read_cd">Mark as read</string>
+    <string name="categories_count">Categories (%1$d)</string>
+    <string name="source_label">Source: %1$s</string>
+
+    <!-- Filter sheet -->
+    <string name="filter_sheet_title">Filter</string>
+    <string name="presets_section_title">Favorites</string>
+    <string name="preset_save_button">+ Save</string>
+    <string name="presets_empty_hint">Save the current topic/publisher selection as a favorite to quickly switch between your topic lists.</string>
+    <string name="preset_delete_cd">Delete favorite “%1$s”</string>
+    <string name="section_publisher">Publisher (empty = all)</string>
+    <string name="section_topics_include">Show topics (empty = all)</string>
+    <string name="section_topics_exclude">Exclude topics</string>
+    <string name="section_language">Language</string>
+    <string name="section_date_range">Date range</string>
+    <string name="section_source_type">Source type</string>
+    <string name="source_type_with_link">With link to source</string>
+    <string name="source_type_short_note">Short note only</string>
+    <string name="save_preset_dialog_title">Save filter as favorite</string>
+    <string name="save_preset_name_placeholder">Name (e.g. “Politics &amp; Business”)</string>
+    <string name="date_from_with_value">From: %1$s</string>
+    <string name="date_from_empty">From</string>
+    <string name="date_to_with_value">To: %1$s</string>
+    <string name="date_to_empty">To</string>
+    <string name="clear_field_cd">Reset %1$s</string>
+
+    <!-- Feed management -->
+    <string name="opml_import_tooltip">Import feed list from an OPML file</string>
+    <string name="opml_export_tooltip">Export/share feed list as an OPML file</string>
+    <string name="opml_import_cd">Import OPML</string>
+    <string name="opml_export_cd">Export OPML</string>
+    <string name="feed_url_label">RSS feed URL</string>
+    <string name="edit_feed_title">Edit feed</string>
+    <string name="export_chooser_title">Export feeds</string>
+    <string name="feed_load_failed">Couldn\'t load feed: %1$s</string>
+    <string name="opml_no_feeds_found">No feeds found in this file.</string>
+    <string name="opml_import_failed">OPML import failed: %1$s</string>
+    <string name="opml_imported_count">%1$d feed(s) imported</string>
+    <string name="opml_skipped_suffix">, %1$d already present</string>
+    <string name="opml_failed_suffix">, %1$d failed</string>
+
+    <!-- Notifications -->
+    <string name="notification_topics_hint">Notify me about new articles on these topics (rough estimate based on feed topic/category/keywords):</string>
+    <string name="notification_presets_hint">Or for new articles matching a saved filter favorite:</string>
+
+    <!-- Appearance / language dialogs -->
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System (default)</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_english">English</string>
+    <string name="language_hint">Changes the app\'s display language and internal locale (date formats, keyboard).</string>
+
+    <!-- Info screen -->
+    <string name="info_title">App info</string>
+    <string name="info_plan_heading">Project plan &amp; progress</string>
+    <string name="status_done_cd">Done</string>
+    <string name="status_next_cd">Next step</string>
+    <string name="status_open_cd">Open</string>
+
+    <!-- Article detail -->
+    <string name="no_fulltext_message">This feed doesn\'t provide full text. Open the original article to read it in full.</string>
+    <string name="open_original_button">Open original article</string>
+</resources>

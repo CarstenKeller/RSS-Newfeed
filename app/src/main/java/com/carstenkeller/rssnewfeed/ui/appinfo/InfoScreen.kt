@@ -28,9 +28,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.carstenkeller.rssnewfeed.BuildConfig
+import com.carstenkeller.rssnewfeed.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,11 +45,11 @@ fun InfoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("App-Info") },
+                title = { Text(stringResource(R.string.info_title)) },
                 colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
             )
@@ -58,18 +60,18 @@ fun InfoScreen(
         ) {
             item {
                 Text(
-                    text = "RSS Newsfeed",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(top = 16.dp),
                 )
                 Text(
-                    text = "Version ${BuildConfig.VERSION_NAME} · Build Nr. ${BuildConfig.BUILD_NUMBER}",
+                    text = stringResource(R.string.version_build_label, BuildConfig.VERSION_NAME, BuildConfig.BUILD_NUMBER.toString()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(24.dp))
                 Text(
-                    text = "Projektplan & Fortschritt",
+                    text = stringResource(R.string.info_plan_heading),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -120,17 +122,17 @@ private fun TodoRow(todo: PlanLine.Todo) {
         when {
             todo.done -> Icon(
                 Icons.Filled.CheckCircle,
-                contentDescription = "Erledigt",
+                contentDescription = stringResource(R.string.status_done_cd),
                 tint = Color(0xFF2E7D32),
             )
             todo.isNextStep -> Icon(
                 Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Nächster Schritt",
+                contentDescription = stringResource(R.string.status_next_cd),
                 tint = Color(0xFFB8860B),
             )
             else -> Icon(
                 Icons.Filled.RadioButtonUnchecked,
-                contentDescription = "Offen",
+                contentDescription = stringResource(R.string.status_open_cd),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

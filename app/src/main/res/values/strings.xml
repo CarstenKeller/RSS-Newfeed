@@ -1,3 +1,109 @@
 <resources>
     <string name="app_name">RSS Newsfeed</string>
+
+    <!-- Shared / generic -->
+    <string name="action_back">Zurück</string>
+    <string name="action_done">Fertig</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_reset">Zurücksetzen</string>
+    <string name="action_add">Hinzufügen</string>
+    <string name="action_edit">Bearbeiten</string>
+    <string name="action_remove">Entfernen</string>
+    <string name="action_apply">Übernehmen</string>
+    <string name="label_all">Alle</string>
+    <string name="label_name">Name</string>
+    <string name="label_topic">Thema</string>
+    <string name="topic_none">Kein Thema</string>
+    <string name="version_build_label">Version %1$s · Build %2$s</string>
+
+    <!-- Article list header / hamburger menu -->
+    <string name="menu_cd">Menü</string>
+    <string name="menu_search">Suchen</string>
+    <string name="menu_filter">Filter</string>
+    <string name="menu_filter_active">Filter (aktiv)</string>
+    <string name="menu_notifications">Themen-Benachrichtigungen</string>
+    <string name="menu_manage_feeds">Feeds verwalten</string>
+    <string name="menu_appearance">Darstellung</string>
+    <string name="menu_language">Sprache</string>
+
+    <!-- Search panel -->
+    <string name="search_placeholder">Titel, Zusammenfassung …</string>
+    <string name="search_close_cd">Suche schließen</string>
+    <string name="filter_unread">Ungelesen</string>
+    <string name="filter_read">Gelesen</string>
+    <string name="toggle_show_unread">Ungelesen anzeigen</string>
+    <string name="toggle_show_read">Gelesen anzeigen</string>
+    <string name="scroll_to_top">Nach oben</string>
+
+    <!-- Article list empty states -->
+    <string name="empty_no_feeds">Noch keine Feeds hinzugefügt. Tippe oben auf das Menü-Symbol.</string>
+    <string name="empty_no_search_results">Keine Treffer für „%1$s".</string>
+    <string name="empty_no_read_articles">Noch keine gelesenen Artikel.</string>
+    <string name="empty_all_read">Alles gelesen — keine ungelesenen Artikel.</string>
+
+    <!-- Article card -->
+    <string name="mark_read_cd">Als gelesen markieren</string>
+    <string name="categories_count">Kategorien (%1$d)</string>
+    <string name="source_label">Quelle: %1$s</string>
+
+    <!-- Filter sheet -->
+    <string name="filter_sheet_title">Filter</string>
+    <string name="presets_section_title">Favoriten</string>
+    <string name="preset_save_button">+ Speichern</string>
+    <string name="presets_empty_hint">Speichere die aktuelle Themen-/Herausgeber-Auswahl als Favorit, um schnell zwischen deinen Themenlisten zu wechseln.</string>
+    <string name="preset_delete_cd">Favorit „%1$s" löschen</string>
+    <string name="section_publisher">Herausgeber (leer = alle)</string>
+    <string name="section_topics_include">Themen anzeigen (leer = alle)</string>
+    <string name="section_topics_exclude">Themen ausschließen</string>
+    <string name="section_language">Sprache</string>
+    <string name="section_date_range">Zeitraum</string>
+    <string name="section_source_type">Quellart</string>
+    <string name="source_type_with_link">Mit Link zur Quelle</string>
+    <string name="source_type_short_note">Nur Kurznachricht</string>
+    <string name="save_preset_dialog_title">Filter als Favorit speichern</string>
+    <string name="save_preset_name_placeholder">Name (z. B. „Politik &amp; Wirtschaft")</string>
+    <string name="date_from_with_value">Von: %1$s</string>
+    <string name="date_from_empty">Von</string>
+    <string name="date_to_with_value">Bis: %1$s</string>
+    <string name="date_to_empty">Bis</string>
+    <string name="clear_field_cd">%1$s zurücksetzen</string>
+
+    <!-- Feed management -->
+    <string name="opml_import_tooltip">Feedliste aus OPML-Datei importieren</string>
+    <string name="opml_export_tooltip">Feedliste als OPML-Datei exportieren/teilen</string>
+    <string name="opml_import_cd">OPML importieren</string>
+    <string name="opml_export_cd">OPML exportieren</string>
+    <string name="feed_url_label">RSS-Feed-URL</string>
+    <string name="edit_feed_title">Feed bearbeiten</string>
+    <string name="export_chooser_title">Feeds exportieren</string>
+    <string name="feed_load_failed">Feed konnte nicht geladen werden: %1$s</string>
+    <string name="opml_no_feeds_found">Keine Feeds in dieser Datei gefunden.</string>
+    <string name="opml_import_failed">OPML-Import fehlgeschlagen: %1$s</string>
+    <string name="opml_imported_count">%1$d Feed(s) importiert</string>
+    <string name="opml_skipped_suffix">, %1$d bereits vorhanden</string>
+    <string name="opml_failed_suffix">, %1$d fehlgeschlagen</string>
+
+    <!-- Notifications -->
+    <string name="notification_topics_hint">Bei neuen Artikeln zu diesen Themen benachrichtigen (grobe Einschätzung anhand Feed-Thema/Kategorie/Stichwörtern):</string>
+    <string name="notification_presets_hint">Oder bei neuen Artikeln, die zu einem gespeicherten Filter-Favoriten passen:</string>
+
+    <!-- Appearance / language dialogs -->
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
+    <string name="theme_system">System (Standard)</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_english">English</string>
+    <string name="language_hint">Ändert die Anzeigesprache der App sowie die interne Locale (Datumsformate, Tastatur).</string>
+
+    <!-- Info screen -->
+    <string name="info_title">App-Info</string>
+    <string name="info_plan_heading">Projektplan &amp; Fortschritt</string>
+    <string name="status_done_cd">Erledigt</string>
+    <string name="status_next_cd">Nächster Schritt</string>
+    <string name="status_open_cd">Offen</string>
+
+    <!-- Article detail -->
+    <string name="no_fulltext_message">Dieser Feed liefert keinen Volltext. Öffne den Original-Artikel, um ihn vollständig zu lesen.</string>
+    <string name="open_original_button">Original-Artikel öffnen</string>
 </resources>

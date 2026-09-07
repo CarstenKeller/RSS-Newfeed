@@ -47,8 +47,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.db.FeedEntity
 import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
 import kotlinx.coroutines.launch
@@ -65,6 +67,8 @@ fun FeedManagementScreen(
     var feedToEdit by remember { mutableStateOf<FeedEntity?>(null) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val exportChooserTitle = stringResource(R.string.export_chooser_title)
+    val noTopicLabel = stringResource(R.string.topic_none)
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
@@ -75,26 +79,26 @@ fun FeedManagementScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Feeds verwalten") },
+                title = { Text(stringResource(R.string.menu_manage_feeds)) },
                 colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 actions = {
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Feedliste aus OPML-Datei importieren") } },
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.opml_import_tooltip)) } },
                         state = rememberTooltipState(),
                     ) {
                         IconButton(onClick = { importLauncher.launch(arrayOf("*/*")) }) {
-                            Icon(Icons.Filled.FileUpload, contentDescription = "OPML importieren")
+                            Icon(Icons.Filled.FileUpload, contentDescription = stringResource(R.string.opml_import_cd))
                         }
                     }
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Feedliste als OPML-Datei exportieren/teilen") } },
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.opml_export_tooltip)) } },
                         state = rememberTooltipState(),
                     ) {
                         IconButton(onClick = {
@@ -109,10 +113,10 @@ fun FeedManagementScreen(
                                     putExtra(Intent.EXTRA_STREAM, uri)
                                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 }
-                                context.startActivity(Intent.createChooser(intent, "Feeds exportieren"))
+                                context.startActivity(Intent.createChooser(intent, exportChooserTitle))
                             }
                         }) {
-                            Icon(Icons.Filled.FileDownload, contentDescription = "OPML exportieren")
+                            Icon(Icons.Filled.FileDownload, contentDescription = stringResource(R.string.opml_export_cd))
                         }
                     }
                 },
@@ -127,7 +131,7 @@ fun FeedManagementScreen(
                 OutlinedTextField(
                     value = newFeedUrl,
                     onValueChange = { newFeedUrl = it },
-                    label = { Text("RSS-Feed-URL") },
+                    label = { Text(stringResource(R.string.feed_url_label)) },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                 )
@@ -138,7 +142,7 @@ fun FeedManagementScreen(
                     },
                     enabled = !state.isAdding && newFeedUrl.isNotBlank(),
                 ) {
-                    Text("Hinzufügen")
+                    Text(stringResource(R.string.action_add))
                 }
             }
 
@@ -148,14 +152,14 @@ fun FeedManagementScreen(
 
             state.errorMessage?.let {
                 Text(
-                    text = it,
+                    text = feedStatusMessageText(it),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
             state.infoMessage?.let {
                 Text(
-                    text = it,
+                    text = feedStatusMessageText(it),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
@@ -172,7 +176,7 @@ fun FeedManagementScreen(
                                 Text(feed.url, maxLines = 1)
                                 AssistChip(
                                     onClick = { feedToEdit = feed },
-                                    label = { Text(feed.topicTag ?: "Kein Thema") },
+                                    label = { Text(feed.topicTag ?: noTopicLabel) },
                                     modifier = Modifier.padding(top = 4.dp),
                                 )
                             }
@@ -180,10 +184,10 @@ fun FeedManagementScreen(
                         trailingContent = {
                             Row {
                                 IconButton(onClick = { feedToEdit = feed }) {
-                                    Icon(Icons.Filled.Edit, contentDescription = "Bearbeiten")
+                                    Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.action_edit))
                                 }
                                 IconButton(onClick = { viewModel.removeFeed(feed) }) {
-                                    Icon(Icons.Filled.Delete, contentDescription = "Entfernen")
+                                    Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.action_remove))
                                 }
                             }
                         },
@@ -207,6 +211,19 @@ fun FeedManagementScreen(
     }
 }
 
+@Composable
+private fun feedStatusMessageText(message: FeedStatusMessage): String = when (message) {
+    is FeedStatusMessage.LoadFailed -> stringResource(R.string.feed_load_failed, message.detail ?: "")
+    is FeedStatusMessage.NoFeedsInFile -> stringResource(R.string.opml_no_feeds_found)
+    is FeedStatusMessage.ImportFailed -> stringResource(R.string.opml_import_failed, message.detail ?: "")
+    is FeedStatusMessage.ImportSummary -> {
+        val added = stringResource(R.string.opml_imported_count, message.added)
+        val skipped = if (message.skipped > 0) stringResource(R.string.opml_skipped_suffix, message.skipped) else ""
+        val failed = if (message.failed > 0) stringResource(R.string.opml_failed_suffix, message.failed) else ""
+        "$added$skipped$failed."
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditFeedDialog(
@@ -217,28 +234,29 @@ private fun EditFeedDialog(
     var title by remember { mutableStateOf(feed.title) }
     var topic by remember { mutableStateOf(feed.topicTag) }
     var topicMenuOpen by remember { mutableStateOf(false) }
+    val noTopicLabel = stringResource(R.string.topic_none)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Feed bearbeiten") },
+        title = { Text(stringResource(R.string.edit_feed_title)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.label_name)) },
                     singleLine = true,
                 )
                 Column(modifier = Modifier.padding(top = 12.dp)) {
-                    Text("Thema", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.label_topic), style = MaterialTheme.typography.labelMedium)
                     AssistChip(
                         onClick = { topicMenuOpen = true },
-                        label = { Text(topic ?: "Kein Thema") },
+                        label = { Text(topic ?: noTopicLabel) },
                         modifier = Modifier.padding(top = 4.dp),
                     )
                     DropdownMenu(expanded = topicMenuOpen, onDismissRequest = { topicMenuOpen = false }) {
                         DropdownMenuItem(
-                            text = { Text("Kein Thema") },
+                            text = { Text(noTopicLabel) },
                             onClick = { topic = null; topicMenuOpen = false },
                         )
                         PREDEFINED_TOPICS.forEach { option ->
@@ -252,10 +270,10 @@ private fun EditFeedDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(title, topic) }) { Text("Speichern") }
+            TextButton(onClick = { onConfirm(title, topic) }) { Text(stringResource(R.string.action_save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }

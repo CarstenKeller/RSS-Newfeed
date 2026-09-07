@@ -63,10 +63,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.carstenkeller.rssnewfeed.BuildConfig
+import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
 import com.carstenkeller.rssnewfeed.data.locale.LanguagePreferences
@@ -110,7 +112,7 @@ fun ArticleListScreen(
                 ) {
                     Column(modifier = Modifier.statusBarsPadding()) {
                         Text(
-                            text = "RSS Newsfeed",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -126,7 +128,7 @@ fun ArticleListScreen(
                             ) {
                                 Box {
                                     IconButton(onClick = { menuExpanded = true }) {
-                                        Icon(Icons.Filled.Menu, contentDescription = "Menü")
+                                        Icon(Icons.Filled.Menu, contentDescription = stringResource(R.string.menu_cd))
                                     }
                                     if (!state.filter.isDefault) {
                                         Box(
@@ -152,13 +154,19 @@ fun ArticleListScreen(
                                 FilterChip(
                                     selected = state.filter.showRead,
                                     onClick = { viewModel.setShowRead(!state.filter.showRead) },
-                                    label = { Text(if (state.filter.showRead) "Ungelesen anzeigen" else "Gelesen anzeigen") },
+                                    label = {
+                                        Text(
+                                            stringResource(
+                                                if (state.filter.showRead) R.string.toggle_show_unread else R.string.toggle_show_read,
+                                            ),
+                                        )
+                                    },
                                 )
                                 if (showScrollToTop) {
                                     AssistChip(
                                         onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } },
                                         leadingIcon = { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null) },
-                                        label = { Text("Nach oben") },
+                                        label = { Text(stringResource(R.string.scroll_to_top)) },
                                     )
                                 }
                             }
@@ -193,10 +201,11 @@ fun ArticleListScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         when {
-                            state.feeds.isEmpty() -> "Noch keine Feeds hinzugefügt. Tippe oben auf das Menü-Symbol."
-                            state.searchQuery.isNotBlank() -> "Keine Treffer für \"${state.searchQuery}\"."
-                            state.filter.showRead -> "Noch keine gelesenen Artikel."
-                            else -> "Alles gelesen — keine ungelesenen Artikel."
+                            state.feeds.isEmpty() -> stringResource(R.string.empty_no_feeds)
+                            state.searchQuery.isNotBlank() ->
+                                stringResource(R.string.empty_no_search_results, state.searchQuery)
+                            state.filter.showRead -> stringResource(R.string.empty_no_read_articles)
+                            else -> stringResource(R.string.empty_all_read)
                         },
                     )
                 }
@@ -272,12 +281,12 @@ private fun MainMenu(
 ) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
         DropdownMenuItem(
-            text = { Text("Suchen") },
+            text = { Text(stringResource(R.string.menu_search)) },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
             onClick = { onDismiss(); onSearch() },
         )
         DropdownMenuItem(
-            text = { Text(if (filterActive) "Filter (aktiv)" else "Filter") },
+            text = { Text(stringResource(if (filterActive) R.string.menu_filter_active else R.string.menu_filter)) },
             leadingIcon = {
                 Icon(
                     Icons.Filled.FilterList,
@@ -288,29 +297,31 @@ private fun MainMenu(
             onClick = { onDismiss(); onFilter() },
         )
         DropdownMenuItem(
-            text = { Text("Themen-Benachrichtigungen") },
+            text = { Text(stringResource(R.string.menu_notifications)) },
             leadingIcon = { Icon(Icons.Filled.Notifications, contentDescription = null) },
             onClick = { onDismiss(); onNotifications() },
         )
         DropdownMenuItem(
-            text = { Text("Feeds verwalten") },
+            text = { Text(stringResource(R.string.menu_manage_feeds)) },
             leadingIcon = { Icon(Icons.Filled.RssFeed, contentDescription = null) },
             onClick = { onDismiss(); onManageFeeds() },
         )
         HorizontalDivider()
         DropdownMenuItem(
-            text = { Text("Darstellung") },
+            text = { Text(stringResource(R.string.menu_appearance)) },
             leadingIcon = { Icon(Icons.Filled.DarkMode, contentDescription = null) },
             onClick = { onDismiss(); onAppearance() },
         )
         DropdownMenuItem(
-            text = { Text("Sprache") },
+            text = { Text(stringResource(R.string.menu_language)) },
             leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
             onClick = { onDismiss(); onLanguage() },
         )
         HorizontalDivider()
         DropdownMenuItem(
-            text = { Text("Version ${BuildConfig.VERSION_NAME} · Build ${BuildConfig.BUILD_NUMBER}") },
+            text = {
+                Text(stringResource(R.string.version_build_label, BuildConfig.VERSION_NAME, BuildConfig.BUILD_NUMBER.toString()))
+            },
             leadingIcon = { Icon(Icons.Filled.Info, contentDescription = null) },
             onClick = { onDismiss(); onInfo() },
         )
@@ -344,13 +355,13 @@ private fun SearchPanel(
                 OutlinedTextField(
                     value = query,
                     onValueChange = onQueryChange,
-                    placeholder = { Text("Titel, Zusammenfassung …", maxLines = 1) },
+                    placeholder = { Text(stringResource(R.string.search_placeholder), maxLines = 1) },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                 )
                 IconButton(onClick = onClose) {
-                    Icon(Icons.Filled.Close, contentDescription = "Suche schließen")
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.search_close_cd))
                 }
             }
             SearchScopeRow(scope = scope, onSelect = onSelectScope)
@@ -370,17 +381,17 @@ private fun SearchScopeRow(scope: SearchScope, onSelect: (SearchScope) -> Unit) 
         FilterChip(
             selected = scope == SearchScope.ALLE,
             onClick = { onSelect(SearchScope.ALLE) },
-            label = { Text("Alle") },
+            label = { Text(stringResource(R.string.label_all)) },
         )
         FilterChip(
             selected = scope == SearchScope.UNGELESEN,
             onClick = { onSelect(SearchScope.UNGELESEN) },
-            label = { Text("Ungelesen") },
+            label = { Text(stringResource(R.string.filter_unread)) },
         )
         FilterChip(
             selected = scope == SearchScope.GELESEN,
             onClick = { onSelect(SearchScope.GELESEN) },
-            label = { Text("Gelesen") },
+            label = { Text(stringResource(R.string.filter_read)) },
         )
     }
 }
@@ -441,7 +452,7 @@ private fun DismissibleArticleRow(
                 ) {
                     Icon(
                         Icons.Filled.Done,
-                        contentDescription = "Als gelesen markieren",
+                        contentDescription = stringResource(R.string.mark_read_cd),
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
@@ -497,7 +508,7 @@ private fun ArticleRow(article: ArticleListItem, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "Quelle: ${article.publisherName}",
+                        text = stringResource(R.string.source_label, article.publisherName),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -521,7 +532,10 @@ private fun ArticleRow(article: ArticleListItem, onClick: () -> Unit) {
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                         )
-                        Text("Kategorien (${categories.size})", style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            stringResource(R.string.categories_count, categories.size),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                     }
                     if (categoriesExpanded) {
                         Row(

@@ -27,8 +27,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.carstenkeller.rssnewfeed.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +48,7 @@ fun ArticleDetailScreen(
                 colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
             )
@@ -103,14 +105,14 @@ fun ArticleDetailScreen(
                 Text(current.title, style = MaterialTheme.typography.headlineSmall)
                 Text(current.summary, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    "Dieser Feed liefert keinen Volltext. Öffne den Original-Artikel, um ihn vollständig zu lesen.",
+                    stringResource(R.string.no_fulltext_message),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Button(onClick = {
                     viewModel.markAsRead()
                     CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(current.link))
                 }) {
-                    Text("Original-Artikel öffnen")
+                    Text(stringResource(R.string.open_original_button))
                 }
             }
         }

@@ -25,7 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPresetsStore
 import com.carstenkeller.rssnewfeed.data.notifications.NotificationPreferences
 import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
@@ -47,7 +49,7 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Themen-Benachrichtigungen") },
+        title = { Text(stringResource(R.string.menu_notifications)) },
         text = {
             Column(
                 modifier = Modifier
@@ -55,8 +57,7 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
             ) {
                 Text(
-                    "Bei neuen Artikeln zu diesen Themen benachrichtigen (grobe " +
-                        "Einschätzung anhand Feed-Thema/Kategorie/Stichwörtern):",
+                    stringResource(R.string.notification_topics_hint),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 PREDEFINED_TOPICS.forEach { topic ->
@@ -80,7 +81,7 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
                 if (presets.isNotEmpty()) {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     Text(
-                        "Oder bei neuen Artikeln, die zu einem gespeicherten Filter-Favoriten passen:",
+                        stringResource(R.string.notification_presets_hint),
                         style = MaterialTheme.typography.bodySmall,
                     )
                     presets.forEach { preset ->
@@ -104,7 +105,7 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Fertig") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) }
         },
     )
 }

@@ -214,6 +214,37 @@ Stand Build 10: umgesetzt, noch nicht auf dem Gerät getestet.
   (Locale wechselt), wie in Build 9 bereits angekündigt bleiben die
   Bildschirmtexte aber bis zur noch ausstehenden String-Auslagerung Deutsch.
 
+## Iteration 8 – Vollständige Zweisprachigkeit (Deutsch/English)
+
+Stand Build 11: umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] Alle statischen Bildschirmtexte (Buttons, Labels, Menüpunkte, Dialoge,
+      Platzhalter, Fehlermeldungen, Tooltips, Content-Descriptions für
+      Bedienungshilfen) sind jetzt in `res/values/strings.xml` (Deutsch,
+      Standard) und `res/values-en/strings.xml` (Englisch) ausgelagert.
+      Die Sprachumschaltung im Hamburger-Menü wirkt sich damit jetzt
+      tatsächlich sichtbar auf die App-Texte aus, nicht mehr nur auf
+      Datumsformate/Tastatur.
+- [x] Fehler-/Statusmeldungen in der Feed-Verwaltung (z. B. OPML-Import-
+      Ergebnis, Ladefehler) wurden von fest zusammengebauten deutschen
+      Strings im ViewModel auf strukturierte, in der UI-Schicht übersetzte
+      Meldungen umgestellt.
+- Bewusst NICHT übersetzt (Interpretation, siehe unten): Die Themen-Namen
+  selbst (Politik, Wirtschaft, Sport, Auto, …). Sie sind als Bezeichner in
+  der Datenbank (Feed-Thema), den Filter-Favoriten und den
+  Benachrichtigungs-Einstellungen gespeichert – eine Übersetzung würde
+  bedeuten, gespeicherte Werte sprachabhängig zu machen und hätte das
+  Risiko, bestehende Feed-Zuordnungen/Favoriten beim Sprachwechsel
+  "verwaisen" zu lassen. Das würde einen eigenen, vorsichtigeren
+  Daten-Refactor erfordern (stabiler interner Schlüssel + übersetzter
+  Anzeigename) und ist nicht Teil dieser Iteration.
+- Ebenfalls NICHT übersetzt: der Inhalt dieser PLAN.md selbst (Projekt-
+  Historie/Changelog), da er im Info-Screen unverändert als lebendes
+  Entwicklungsprotokoll angezeigt wird.
+- Die deutsche Stichwortliste zur Themen-Zusatzklassifikation
+  (TopicMatching) bleibt unverändert deutschsprachig, da sie auf den
+  Inhalt deutschsprachiger Feeds zielt – unabhängig von der App-Sprache.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

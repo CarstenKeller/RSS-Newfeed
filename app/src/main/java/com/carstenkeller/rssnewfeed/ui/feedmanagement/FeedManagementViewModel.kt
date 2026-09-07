@@ -13,18 +13,26 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.InputStream
 
+/** Structured status messages, resolved to localized text by the Composable layer. */
+sealed interface FeedStatusMessage {
+    data class LoadFailed(val detail: String?) : FeedStatusMessage
+    data object NoFeedsInFile : FeedStatusMessage
+    data class ImportFailed(val detail: String?) : FeedStatusMessage
+    data class ImportSummary(val added: Int, val skipped: Int, val failed: Int) : FeedStatusMessage
+}
+
 data class FeedManagementUiState(
     val feeds: List<FeedEntity> = emptyList(),
     val isAdding: Boolean = false,
-    val errorMessage: String? = null,
-    val infoMessage: String? = null,
+    val errorMessage: FeedStatusMessage? = null,
+    val infoMessage: FeedStatusMessage? = null,
 )
 
 class FeedManagementViewModel(private val repository: FeedRepository) : ViewModel() {
 
     private val isAdding = MutableStateFlow(false)
-    private val errorMessage = MutableStateFlow<String?>(null)
-    private val infoMessage = MutableStateFlow<String?>(null)
+    private val errorMessage = MutableStateFlow<FeedStatusMessage?>(null)
+    private val infoMessage = MutableStateFlow<FeedStatusMessage?>(null)
 
     val uiState: StateFlow<FeedManagementUiState> = combine(
         repository.feeds,
@@ -44,7 +52,7 @@ class FeedManagementViewModel(private val repository: FeedRepository) : ViewMode
             try {
                 repository.addFeed(trimmed)
             } catch (e: Exception) {
-                errorMessage.value = "Feed konnte nicht geladen werden: ${e.message}"
+                errorMessage.value = FeedStatusMessage.LoadFailed(e.message)
             } finally {
                 isAdding.value = false
             }
@@ -79,18 +87,13 @@ class FeedManagementViewModel(private val repository: FeedRepository) : ViewMode
             try {
                 val opmlFeeds = inputStream.use { Opml.parse(it) }
                 if (opmlFeeds.isEmpty()) {
-                    errorMessage.value = "Keine Feeds in dieser Datei gefunden."
+                    errorMessage.value = FeedStatusMessage.NoFeedsInFile
                     return@launch
                 }
                 val result = repository.importOpmlFeeds(opmlFeeds)
-                infoMessage.value = buildString {
-                    append("${result.added} Feed(s) importiert")
-                    if (result.skipped > 0) append(", ${result.skipped} bereits vorhanden")
-                    if (result.failed > 0) append(", ${result.failed} fehlgeschlagen")
-                    append(".")
-                }
+                infoMessage.value = FeedStatusMessage.ImportSummary(result.added, result.skipped, result.failed)
             } catch (e: Exception) {
-                errorMessage.value = "OPML-Import fehlgeschlagen: ${e.message}"
+                errorMessage.value = FeedStatusMessage.ImportFailed(e.message)
             }
         }
     }

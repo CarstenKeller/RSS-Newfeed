@@ -13,7 +13,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.locale.AppLanguage
 import com.carstenkeller.rssnewfeed.ui.theme.ThemeMode
 
@@ -25,15 +27,15 @@ fun ThemeModeDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Darstellung") },
+        title = { Text(stringResource(R.string.menu_appearance)) },
         text = {
             Column {
-                ThemeModeOption(ThemeMode.HELL, "Hell", current, onSelect)
-                ThemeModeOption(ThemeMode.DUNKEL, "Dunkel", current, onSelect)
-                ThemeModeOption(ThemeMode.SYSTEM, "System (Standard)", current, onSelect)
+                ThemeModeOption(ThemeMode.HELL, stringResource(R.string.theme_light), current, onSelect)
+                ThemeModeOption(ThemeMode.DUNKEL, stringResource(R.string.theme_dark), current, onSelect)
+                ThemeModeOption(ThemeMode.SYSTEM, stringResource(R.string.theme_system), current, onSelect)
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Fertig") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } },
     )
 }
 
@@ -63,23 +65,20 @@ fun LanguageDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Sprache") },
+        title = { Text(stringResource(R.string.menu_language)) },
         text = {
             Column {
-                LanguageOption(AppLanguage.DEUTSCH, "Deutsch", current, onSelect)
-                LanguageOption(AppLanguage.ENGLISH, "English", current, onSelect)
+                LanguageOption(AppLanguage.DEUTSCH, stringResource(R.string.language_german), current, onSelect)
+                LanguageOption(AppLanguage.ENGLISH, stringResource(R.string.language_english), current, onSelect)
                 Text(
-                    "Hinweis: Diese Auswahl stellt derzeit nur die App-interne Locale um " +
-                        "(Datumsformate, Tastatur). Die Bildschirmtexte selbst sind noch " +
-                        "durchgängig Deutsch fest hinterlegt und werden erst in einer " +
-                        "späteren Iteration übersetzt.",
+                    stringResource(R.string.language_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Fertig") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } },
     )
 }
 

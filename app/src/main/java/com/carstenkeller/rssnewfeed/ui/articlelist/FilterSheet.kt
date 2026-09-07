@@ -38,7 +38,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
 import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
 import java.time.Instant
@@ -74,9 +76,9 @@ fun FilterSheet(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Text("Filter", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.filter_sheet_title), style = MaterialTheme.typography.titleLarge)
 
-            SectionLabel("Favoriten")
+            SectionLabel(stringResource(R.string.presets_section_title))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.presets.forEach { preset ->
                     PresetChip(
@@ -85,23 +87,22 @@ fun FilterSheet(
                         onDelete = { onDeletePreset(preset.id) },
                     )
                 }
-                TextButton(onClick = { saveDialogOpen = true }) { Text("+ Speichern") }
+                TextButton(onClick = { saveDialogOpen = true }) { Text(stringResource(R.string.preset_save_button)) }
             }
             if (state.presets.isEmpty()) {
                 Text(
-                    "Speichere die aktuelle Themen-/Herausgeber-Auswahl als Favorit, um schnell " +
-                        "zwischen deinen Themenlisten zu wechseln.",
+                    stringResource(R.string.presets_empty_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            SectionLabel("Herausgeber (leer = alle)")
+            SectionLabel(stringResource(R.string.section_publisher))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.filter.feedIds.isEmpty(),
                     onClick = onClearFeeds,
-                    label = { Text("Alle") },
+                    label = { Text(stringResource(R.string.label_all)) },
                 )
                 state.feeds.forEach { feed ->
                     FilterChip(
@@ -112,25 +113,25 @@ fun FilterSheet(
                 }
             }
 
-            SectionLabel("Themen anzeigen (leer = alle)")
+            SectionLabel(stringResource(R.string.section_topics_include))
             TopicChipRow(
                 selected = state.filter.includedTopics,
                 onToggle = onToggleIncludedTopic,
             )
 
-            SectionLabel("Themen ausschließen")
+            SectionLabel(stringResource(R.string.section_topics_exclude))
             TopicChipRow(
                 selected = state.filter.excludedTopics,
                 onToggle = onToggleExcludedTopic,
             )
 
             if (languages.isNotEmpty()) {
-                SectionLabel("Sprache")
+                SectionLabel(stringResource(R.string.section_language))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
                         selected = state.filter.language == null,
                         onClick = { onSelectLanguage(null) },
-                        label = { Text("Alle") },
+                        label = { Text(stringResource(R.string.label_all)) },
                     )
                     languages.forEach { language ->
                         FilterChip(
@@ -142,29 +143,29 @@ fun FilterSheet(
                 }
             }
 
-            SectionLabel("Zeitraum")
+            SectionLabel(stringResource(R.string.section_date_range))
             DateRangeRow(
                 fromMillis = state.filter.dateFromMillis,
                 toMillis = state.filter.dateToMillis,
                 onSetDateRange = onSetDateRange,
             )
 
-            SectionLabel("Quellart")
+            SectionLabel(stringResource(R.string.section_source_type))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.filter.sourceLinkFilter == SourceLinkFilter.ALLE,
                     onClick = { onSelectSourceLinkFilter(SourceLinkFilter.ALLE) },
-                    label = { Text("Alle") },
+                    label = { Text(stringResource(R.string.label_all)) },
                 )
                 FilterChip(
                     selected = state.filter.sourceLinkFilter == SourceLinkFilter.MIT_LINK,
                     onClick = { onSelectSourceLinkFilter(SourceLinkFilter.MIT_LINK) },
-                    label = { Text("Mit Link zur Quelle") },
+                    label = { Text(stringResource(R.string.source_type_with_link)) },
                 )
                 FilterChip(
                     selected = state.filter.sourceLinkFilter == SourceLinkFilter.NUR_KURZNACHRICHT,
                     onClick = { onSelectSourceLinkFilter(SourceLinkFilter.NUR_KURZNACHRICHT) },
-                    label = { Text("Nur Kurznachricht") },
+                    label = { Text(stringResource(R.string.source_type_short_note)) },
                 )
             }
 
@@ -172,8 +173,8 @@ fun FilterSheet(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                TextButton(onClick = onReset) { Text("Zurücksetzen") }
-                Button(onClick = onDismiss) { Text("Fertig") }
+                TextButton(onClick = onReset) { Text(stringResource(R.string.action_reset)) }
+                Button(onClick = onDismiss) { Text(stringResource(R.string.action_done)) }
             }
         }
     }
@@ -201,7 +202,7 @@ private fun PresetChip(preset: FilterPreset, onApply: () -> Unit, onDelete: () -
             // onClick, so the icon can delete while the rest of the chip applies.
             Icon(
                 Icons.Filled.Close,
-                contentDescription = "Favorit „${preset.name}“ löschen",
+                contentDescription = stringResource(R.string.preset_delete_cd, preset.name),
                 modifier = Modifier
                     .size(InputChipDefaults.IconSize)
                     .clickable(onClick = onDelete),
@@ -215,20 +216,22 @@ private fun SavePresetDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit)
     var name by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Filter als Favorit speichern") },
+        title = { Text(stringResource(R.string.save_preset_dialog_title)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name (z. B. \"Politik & Wirtschaft\")") },
+                label = { Text(stringResource(R.string.save_preset_name_placeholder)) },
                 singleLine = true,
             )
         },
         confirmButton = {
-            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim()) }) { Text("Speichern") }
+            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim()) }) {
+                Text(stringResource(R.string.action_save))
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }
@@ -270,15 +273,20 @@ private fun DateRangeRow(
     var showFromPicker by remember { mutableStateOf(false) }
     var showToPicker by remember { mutableStateOf(false) }
 
+    val fromEmptyLabel = stringResource(R.string.date_from_empty)
+    val toEmptyLabel = stringResource(R.string.date_to_empty)
+    val fromLabel = fromMillis?.let { stringResource(R.string.date_from_with_value, formatDate(it)) } ?: fromEmptyLabel
+    val toLabel = toMillis?.let { stringResource(R.string.date_to_with_value, formatDate(it)) } ?: toEmptyLabel
+
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         DateFieldWithClear(
-            label = fromMillis?.let { "Von: ${formatDate(it)}" } ?: "Von",
+            label = fromLabel,
             showClear = fromMillis != null,
             onClick = { showFromPicker = true },
             onClear = { onSetDateRange(null, toMillis) },
         )
         DateFieldWithClear(
-            label = toMillis?.let { "Bis: ${formatDate(it)}" } ?: "Bis",
+            label = toLabel,
             showClear = toMillis != null,
             onClick = { showToPicker = true },
             onClear = { onSetDateRange(fromMillis, null) },
@@ -293,9 +301,11 @@ private fun DateRangeRow(
                 TextButton(onClick = {
                     onSetDateRange(pickerState.selectedDateMillis, toMillis)
                     showFromPicker = false
-                }) { Text("Übernehmen") }
+                }) { Text(stringResource(R.string.action_apply)) }
             },
-            dismissButton = { TextButton(onClick = { showFromPicker = false }) { Text("Abbrechen") } },
+            dismissButton = {
+                TextButton(onClick = { showFromPicker = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
         ) { DatePicker(state = pickerState) }
     }
 
@@ -307,9 +317,11 @@ private fun DateRangeRow(
                 TextButton(onClick = {
                     onSetDateRange(fromMillis, pickerState.selectedDateMillis)
                     showToPicker = false
-                }) { Text("Übernehmen") }
+                }) { Text(stringResource(R.string.action_apply)) }
             },
-            dismissButton = { TextButton(onClick = { showToPicker = false }) { Text("Abbrechen") } },
+            dismissButton = {
+                TextButton(onClick = { showToPicker = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
         ) { DatePicker(state = pickerState) }
     }
 }
@@ -325,7 +337,7 @@ private fun DateFieldWithClear(
         OutlinedButton(onClick = onClick) { Text(label) }
         if (showClear) {
             IconButton(onClick = onClear, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Filled.Close, contentDescription = "$label zurücksetzen")
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.clear_field_cd, label))
             }
         }
     }
