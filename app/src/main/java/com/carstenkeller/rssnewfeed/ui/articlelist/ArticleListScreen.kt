@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -22,6 +23,8 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
@@ -41,9 +44,11 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,10 +56,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
+import com.carstenkeller.rssnewfeed.ui.notifications.NotificationSettingsDialog
 import com.carstenkeller.rssnewfeed.ui.theme.readHighlightColor
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +74,10 @@ fun ArticleListScreen(
     val state by viewModel.uiState.collectAsState()
     var filterSheetOpen by remember { mutableStateOf(false) }
     var searchExpanded by remember { mutableStateOf(false) }
+    var notificationSettingsOpen by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showScrollToTop by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
 
     Scaffold(
         topBar = {
@@ -109,6 +120,9 @@ fun ArticleListScreen(
                                     },
                                 )
                             }
+                            IconButton(onClick = { notificationSettingsOpen = true }) {
+                                Icon(Icons.Filled.Notifications, contentDescription = "Themen-Benachrichtigungen")
+                            }
                             IconButton(onClick = onOpenFeedManagement) {
                                 Icon(Icons.Filled.RssFeed, contentDescription = "Feeds verwalten")
                             }
@@ -121,6 +135,8 @@ fun ArticleListScreen(
                 ReadFilterRow(
                     showRead = state.filter.showRead,
                     onToggle = viewModel::setShowRead,
+                    showScrollToTop = showScrollToTop,
+                    onScrollToTop = { coroutineScope.launch { listState.animateScrollToItem(0) } },
                 )
             }
         },
@@ -145,6 +161,7 @@ fun ArticleListScreen(
                 }
             }
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp),
             ) {
@@ -171,10 +188,19 @@ fun ArticleListScreen(
             onReset = viewModel::resetFilters,
         )
     }
+
+    if (notificationSettingsOpen) {
+        NotificationSettingsDialog(onDismiss = { notificationSettingsOpen = false })
+    }
 }
 
 @Composable
-private fun ReadFilterRow(showRead: Boolean, onToggle: (Boolean) -> Unit) {
+private fun ReadFilterRow(
+    showRead: Boolean,
+    onToggle: (Boolean) -> Unit,
+    showScrollToTop: Boolean,
+    onScrollToTop: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -186,6 +212,13 @@ private fun ReadFilterRow(showRead: Boolean, onToggle: (Boolean) -> Unit) {
             onClick = { onToggle(!showRead) },
             label = { Text(if (showRead) "Ungelesen anzeigen" else "Gelesen anzeigen") },
         )
+        if (showScrollToTop) {
+            AssistChip(
+                onClick = onScrollToTop,
+                leadingIcon = { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null) },
+                label = { Text("Nach oben") },
+            )
+        }
     }
 }
 

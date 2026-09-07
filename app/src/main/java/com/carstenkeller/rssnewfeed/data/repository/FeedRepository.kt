@@ -11,6 +11,14 @@ import kotlinx.coroutines.flow.Flow
 
 data class OpmlImportResult(val added: Int, val skipped: Int, val failed: Int)
 
+/** Minimal info about a newly-inserted article, enough to check it against watched topics. */
+data class NewArticleInfo(
+    val title: String,
+    val summary: String,
+    val categories: String,
+    val feedTopicTag: String?,
+)
+
 class FeedRepository(
     private val feedDao: FeedDao,
     private val articleDao: ArticleDao,
@@ -63,24 +71,36 @@ class FeedRepository(
         return OpmlImportResult(added, skipped, failed)
     }
 
-    /** Refreshes every known feed; failures on one feed don't abort the others. */
-    suspend fun refreshAll() {
+    /**
+     * Refreshes every known feed; failures on one feed don't abort the others.
+     * Returns info about articles that were actually new (not already stored), so
+     * callers (the background worker) can check them against watched-topic notifications.
+     */
+    suspend fun refreshAll(): List<NewArticleInfo> {
+        val newArticles = mutableListOf<NewArticleInfo>()
         for (feed in feedDao.getAll()) {
-            refreshFeed(feed)
+            newArticles += refreshFeed(feed)
         }
+        return newArticles
     }
 
-    suspend fun refreshFeed(feed: FeedEntity) {
-        try {
+    suspend fun refreshFeed(feed: FeedEntity): List<NewArticleInfo> {
+        return try {
             val parsed = fetcher.fetchAndParse(feed.url)
-            storeItems(feed.id, parsed.items)
+            val inserted = storeItems(feed.id, parsed.items)
             feedDao.update(feed.copy(lastFetchedAt = System.currentTimeMillis(), lastFetchError = null))
+            inserted.map { NewArticleInfo(it.title, it.summary, it.categories, feed.topicTag) }
         } catch (e: Exception) {
             feedDao.update(feed.copy(lastFetchError = e.message ?: "Unbekannter Fehler"))
+            emptyList()
         }
     }
 
-    private suspend fun storeItems(feedId: Long, items: List<com.carstenkeller.rssnewfeed.data.network.ParsedItem>) {
+    /** Returns only the articles that were actually inserted (IGNORE-conflict rows come back as id -1). */
+    private suspend fun storeItems(
+        feedId: Long,
+        items: List<com.carstenkeller.rssnewfeed.data.network.ParsedItem>,
+    ): List<ArticleEntity> {
         val now = System.currentTimeMillis()
         val entities = items.map { item ->
             ArticleEntity(
@@ -96,7 +116,8 @@ class FeedRepository(
                 categories = item.categories.joinToString(","),
             )
         }
-        articleDao.insertAll(entities)
+        val ids = articleDao.insertAll(entities)
+        return entities.zip(ids).filter { (_, id) -> id != -1L }.map { (entity, _) -> entity }
     }
 
     suspend fun markRead(articleId: Long) = articleDao.markRead(articleId)

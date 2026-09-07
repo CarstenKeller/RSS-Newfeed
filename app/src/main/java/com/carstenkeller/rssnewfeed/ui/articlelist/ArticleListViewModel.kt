@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.carstenkeller.rssnewfeed.data.db.ArticleListItem
 import com.carstenkeller.rssnewfeed.data.db.FeedEntity
 import com.carstenkeller.rssnewfeed.data.repository.FeedRepository
+import com.carstenkeller.rssnewfeed.domain.TopicMatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -78,13 +79,13 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
         refresh()
     }
 
-    /** A topic matches if it's the feed's assigned topic, or one of the item's own `<category>` tags. */
-    private fun matchesAnyTopic(item: ArticleListItem, topics: Set<String>): Boolean {
-        if (item.publisherTopicTag != null && item.publisherTopicTag in topics) return true
-        if (item.categories.isBlank()) return false
-        val categories = item.categories.split(",")
-        return topics.any { topic -> categories.any { it.contains(topic, ignoreCase = true) } }
-    }
+    private fun matchesAnyTopic(item: ArticleListItem, topics: Set<String>): Boolean = TopicMatching.matches(
+        feedTopicTag = item.publisherTopicTag,
+        categoriesCsv = item.categories,
+        title = item.title,
+        summary = item.summary,
+        watchedTopics = topics,
+    )
 
     fun refresh() {
         viewModelScope.launch {

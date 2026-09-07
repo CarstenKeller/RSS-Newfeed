@@ -20,9 +20,13 @@ diese Datei + nächster offener Schritt).
 
 - **Volltext**: Nur angezeigt, wenn der Feed ihn liefert (`content:encoded`).
   Sonst Öffnen des Originalartikels via Custom Tab. Kein Scraping fremder Seiten.
-- **Themen-Klassifikation**: Basiert in der MVP-/Iteration-2-Phase auf
-  (a) manuell zugewiesenem Thema pro Feed und (b) vorhandenen `<category>`-Tags
-  im Feed. Keine automatische inhaltliche Einzelartikel-Klassifikation im MVP.
+- **Themen-Klassifikation**: Basiert auf (a) manuell zugewiesenem Thema pro
+  Feed, (b) vorhandenen `<category>`-Tags im Feed und (c) seit Iteration 3
+  einer einfachen deutschen Stichwortliste pro Thema als dritter, schwächster
+  Signal-Ebene. Das ist weiterhin keine echte inhaltliche Klassifikation
+  (kein ML) – Stichwörter können Artikel verpassen oder gelegentlich falsch
+  zuordnen. Wird sowohl für Filter als auch für Themen-Benachrichtigungen
+  verwendet.
 - **Sprache**: Wird pro Feed hinterlegt (aus `<language>`-Tag oder manuell),
   nicht pro Artikel erkannt.
 
@@ -46,7 +50,7 @@ versionsübergreifend gespeichert. App-Name korrigiert zu "RSS Newsfeed"
 - [x] Feed-Refresh: manuell (Pull-to-Refresh) + periodisch im Hintergrund
 - [x] Artikel-Liste: chronologisch (neueste zuerst), Bild + Titel + max.
       2-zeilige Zusammenfassung + Herausgeber + Datum/Uhrzeit + aufklappbare
-      erkannte Kategorien
+      erkannte Kategorien + "Nach oben"-Button (erscheint beim Herunterscrollen)
 - [x] Artikel-Detailansicht (Volltext aus Feed oder Custom-Tab-Fallback)
 - [x] Automatische Gelesen-Markierung bei Erreichen des Artikelendes +
       hellgrüne Hervorhebung in der Liste
@@ -82,20 +86,27 @@ jetzt eine robuste, rein JavaScript-basierte Prüfung.
 
 ## Iteration 3 – Ausbaustufen (optional, nach Bedarf)
 
-Stand Build 4: Zwei Punkte umgesetzt (Suche, OPML), noch nicht auf dem Gerät
-getestet. Die restlichen drei bewusst zurückgestellt, da komplexer/spekulativer
-(Benachrichtigungen brauchen einen Laufzeit-Berechtigungsdialog und eine neue
-"Themen beobachten"-Einstellung; Keyword-Klassifikation und Offline-Feinschliff
-haben unklaren Mehrwert ohne konkreten Bedarf) – sag Bescheid, falls einer davon
-doch Priorität haben soll.
+Stand Build 5: alle fünf Punkte umgesetzt, noch nicht auf dem Gerät getestet.
+Damit ist der ursprüngliche Plan vollständig abgearbeitet – weitere Schritte
+gibt es nur noch, wenn du neue Wünsche hast.
 
 - [x] Volltextsuche über Titel/Zusammenfassung (Suchsymbol oben in der Leiste)
-- [ ] Keyword-basierte Zusatzklassifikation einzelner Artikel (zurückgestellt)
+- [x] Keyword-basierte Zusatzklassifikation einzelner Artikel (deutsche
+      Stichwortliste pro Thema als dritte, schwächste Signal-Ebene nach
+      Feed-Thema und `<category>`-Tag; siehe „Bekannte Einschränkungen“)
 - [x] OPML-Export/-Import der Feed-Liste (Symbole in der Feed-Verwaltung;
       Export teilt eine .opml-Datei, Import liest eine ausgewählte Datei ein
       und überspringt bereits vorhandene Feed-URLs)
-- [ ] Benachrichtigungen bei neuen Artikeln zu ausgewählten Themen (zurückgestellt)
-- [ ] Offline-Lesen / Bild-Caching-Feinschliff (zurückgestellt)
+- [x] Benachrichtigungen bei neuen Artikeln zu ausgewählten Themen
+      (Glocken-Symbol in der Artikelliste öffnet die Themen-Auswahl; fragt
+      beim ersten aktivierten Thema die Benachrichtigungs-Berechtigung an;
+      der Hintergrund-Refresh benachrichtigt bei neuen, thematisch
+      passenden Artikeln)
+- [x] Offline-Lesen / Bild-Caching-Feinschliff (Artikeltext liegt ohnehin in
+      der Datenbank; Bilder in der Artikel-Detailansicht laufen jetzt über
+      einen plattenzwischengespeicherten HTTP-Client, sodass bereits gesehene
+      Bilder auch offline angezeigt werden – Listen-Vorschaubilder cacht Coil
+      bereits von sich aus)
 
 ## Build & Auslieferung
 

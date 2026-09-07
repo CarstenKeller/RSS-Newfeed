@@ -1,9 +1,12 @@
 package com.carstenkeller.rssnewfeed.ui.articledetail
 
 import android.net.Uri
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.browser.customtabs.CustomTabsIntent
+import com.carstenkeller.rssnewfeed.data.network.CachedImageLoader
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,6 +74,18 @@ fun ArticleDetailScreen(
                                 // Short articles that fit on one screen never fire a scroll
                                 // event at all, so also check right after the page settles.
                                 checkScrolledToBottom(view, viewModel)
+                            }
+
+                            // Routes <img> requests through a disk-cached OkHttp client so
+                            // images already seen once are still shown when offline — the
+                            // WebView's own network stack has no such cache.
+                            override fun shouldInterceptRequest(
+                                view: WebView,
+                                request: WebResourceRequest,
+                            ): WebResourceResponse? {
+                                if (request.isForMainFrame) return null
+                                return CachedImageLoader.load(view.context, request.url.toString())
+                                    ?: super.shouldInterceptRequest(view, request)
                             }
                         }
                         setOnScrollChangeListener { view, _, _, _, _ ->
