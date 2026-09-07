@@ -128,6 +128,20 @@ ersten intensiveren Gebrauch mit mehreren Quellen/Themen.
 - [x] Suche: eigener Bereich-Schalter (Alle/Ungelesen/Gelesen), unabhängig
       vom normalen Gelesen-Umschalter der Übersicht
 
+## Iteration 5 – Feedback nach Build 6
+
+Stand Build 7: beide Punkte umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] Bugfix: Der Bereich-Schalter (Alle/Ungelesen/Gelesen) bei der Suche
+      brach auf schmalen Displays um, sodass die "Gelesen"-Beschriftung
+      buchstabenweise untereinander stand – die Zeile ist jetzt horizontal
+      scrollbar (wie die Favoriten-Schnellauswahl)
+- [x] Herausgeber-Filter erlaubt jetzt Mehrfachauswahl (z. B. zwei Quellen
+      gleichzeitig anzeigen) statt nur eines einzelnen Herausgebers – analog
+      zur bestehenden Themen-Mehrfachauswahl. Gespeicherte Filter-Favoriten
+      aus älteren Builds (einzelner Herausgeber) werden beim Laden automatisch
+      in das neue Format überführt
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

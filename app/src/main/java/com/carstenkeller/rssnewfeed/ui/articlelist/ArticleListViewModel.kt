@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 enum class SearchScope { ALLE, UNGELESEN, GELESEN }
 
 data class ArticleFilterState(
-    val feedId: Long? = null,
+    val feedIds: Set<Long> = emptySet(),
     // Everything new starts unread; unread is therefore the implicit default view and
     // needs no filter option of its own. This just toggles into the "Gelesen" archive.
     val showRead: Boolean = false,
@@ -30,7 +30,7 @@ data class ArticleFilterState(
     val dateToMillis: Long? = null,
 ) {
     val isDefault: Boolean
-        get() = feedId == null && !showRead && includedTopics.isEmpty() &&
+        get() = feedIds.isEmpty() && !showRead && includedTopics.isEmpty() &&
             excludedTopics.isEmpty() && language == null && dateFromMillis == null && dateToMillis == null
 }
 
@@ -67,7 +67,7 @@ class ArticleListViewModel(
         val (query, scope, presetList) = searchAndPresets
         val isSearching = query.isNotBlank()
         val filtered = articles
-            .filter { filter.feedId == null || it.feedId == filter.feedId }
+            .filter { filter.feedIds.isEmpty() || it.feedId in filter.feedIds }
             .filter {
                 if (isSearching) {
                     when (scope) {
@@ -127,8 +127,15 @@ class ArticleListViewModel(
         }
     }
 
-    fun setFeedFilter(feedId: Long?) {
-        filterState.value = filterState.value.copy(feedId = feedId)
+    fun toggleFeedFilter(feedId: Long) {
+        val current = filterState.value.feedIds
+        filterState.value = filterState.value.copy(
+            feedIds = if (feedId in current) current - feedId else current + feedId,
+        )
+    }
+
+    fun clearFeedFilter() {
+        filterState.value = filterState.value.copy(feedIds = emptySet())
     }
 
     fun setShowRead(showRead: Boolean) {
@@ -174,7 +181,7 @@ class ArticleListViewModel(
         FilterPresetsStore.add(
             appContext,
             name = name,
-            feedId = current.feedId,
+            feedIds = current.feedIds,
             includedTopics = current.includedTopics,
             excludedTopics = current.excludedTopics,
             language = current.language,
@@ -185,7 +192,7 @@ class ArticleListViewModel(
     /** Applies a preset's topic/publisher/language selection; read state and date range are untouched. */
     fun applyPreset(preset: FilterPreset) {
         filterState.value = filterState.value.copy(
-            feedId = preset.feedId,
+            feedIds = preset.feedIds,
             includedTopics = preset.includedTopics,
             excludedTopics = preset.excludedTopics,
             language = preset.language,

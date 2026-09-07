@@ -21,11 +21,11 @@ object FilterPresetsStore {
         }
     }
 
-    fun add(context: Context, name: String, feedId: Long?, includedTopics: Set<String>, excludedTopics: Set<String>, language: String?) {
+    fun add(context: Context, name: String, feedIds: Set<Long>, includedTopics: Set<String>, excludedTopics: Set<String>, language: String?) {
         val preset = FilterPreset(
             id = UUID.randomUUID().toString(),
             name = name,
-            feedId = feedId,
+            feedIds = feedIds,
             includedTopics = includedTopics,
             excludedTopics = excludedTopics,
             language = language,
@@ -49,7 +49,7 @@ object FilterPresetsStore {
     private fun FilterPreset.toJson(): JSONObject = JSONObject().apply {
         put("id", id)
         put("name", name)
-        put("feedId", feedId ?: JSONObject.NULL)
+        put("feedIds", JSONArray(feedIds.toList()))
         put("includedTopics", JSONArray(includedTopics.toList()))
         put("excludedTopics", JSONArray(excludedTopics.toList()))
         put("language", language ?: JSONObject.NULL)
@@ -58,7 +58,12 @@ object FilterPresetsStore {
     private fun JSONObject.toPreset(): FilterPreset = FilterPreset(
         id = getString("id"),
         name = getString("name"),
-        feedId = if (isNull("feedId")) null else getLong("feedId"),
+        feedIds = when {
+            has("feedIds") -> getJSONArray("feedIds").toLongSet()
+            // Migrate presets saved before multi-select ("feedId": Long? or null).
+            !isNull("feedId") -> setOf(getLong("feedId"))
+            else -> emptySet()
+        },
         includedTopics = getJSONArray("includedTopics").toStringSet(),
         excludedTopics = getJSONArray("excludedTopics").toStringSet(),
         language = if (isNull("language")) null else getString("language"),
@@ -66,4 +71,7 @@ object FilterPresetsStore {
 
     private fun JSONArray.toStringSet(): Set<String> =
         (0 until length()).map { getString(it) }.toSet()
+
+    private fun JSONArray.toLongSet(): Set<Long> =
+        (0 until length()).map { getLong(it) }.toSet()
 }

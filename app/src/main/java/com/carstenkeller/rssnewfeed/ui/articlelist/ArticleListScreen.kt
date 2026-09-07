@@ -188,7 +188,8 @@ fun ArticleListScreen(
         FilterSheet(
             state = state,
             onDismiss = { filterSheetOpen = false },
-            onSelectFeed = viewModel::setFeedFilter,
+            onToggleFeed = viewModel::toggleFeedFilter,
+            onClearFeeds = viewModel::clearFeedFilter,
             onToggleIncludedTopic = viewModel::toggleIncludedTopic,
             onToggleExcludedTopic = viewModel::toggleExcludedTopic,
             onSelectLanguage = viewModel::setLanguageFilter,
@@ -210,6 +211,7 @@ private fun SearchScopeRow(scope: SearchScope, onSelect: (SearchScope) -> Unit) 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {

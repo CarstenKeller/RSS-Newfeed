@@ -50,7 +50,8 @@ import java.time.format.DateTimeFormatter
 fun FilterSheet(
     state: ArticleListUiState,
     onDismiss: () -> Unit,
-    onSelectFeed: (Long?) -> Unit,
+    onToggleFeed: (Long) -> Unit,
+    onClearFeeds: () -> Unit,
     onToggleIncludedTopic: (String) -> Unit,
     onToggleExcludedTopic: (String) -> Unit,
     onSelectLanguage: (String?) -> Unit,
@@ -94,17 +95,17 @@ fun FilterSheet(
                 )
             }
 
-            SectionLabel("Herausgeber")
+            SectionLabel("Herausgeber (leer = alle)")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
-                    selected = state.filter.feedId == null,
-                    onClick = { onSelectFeed(null) },
+                    selected = state.filter.feedIds.isEmpty(),
+                    onClick = onClearFeeds,
                     label = { Text("Alle") },
                 )
                 state.feeds.forEach { feed ->
                     FilterChip(
-                        selected = state.filter.feedId == feed.id,
-                        onClick = { onSelectFeed(feed.id) },
+                        selected = feed.id in state.filter.feedIds,
+                        onClick = { onToggleFeed(feed.id) },
                         label = { Text(feed.title) },
                     )
                 }

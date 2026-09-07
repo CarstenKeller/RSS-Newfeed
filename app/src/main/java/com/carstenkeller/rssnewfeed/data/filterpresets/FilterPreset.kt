@@ -9,7 +9,7 @@ package com.carstenkeller.rssnewfeed.data.filterpresets
 data class FilterPreset(
     val id: String,
     val name: String,
-    val feedId: Long?,
+    val feedIds: Set<Long>,
     val includedTopics: Set<String>,
     val excludedTopics: Set<String>,
     val language: String?,
