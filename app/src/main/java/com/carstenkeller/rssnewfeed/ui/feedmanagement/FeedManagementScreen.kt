@@ -243,7 +243,8 @@ private fun EditFeedDialog(
     var selectedTopics by remember {
         mutableStateOf(feed.topicTags.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet())
     }
-    val availableTopics = remember { TopicsStore.getTopics(context) }
+    var availableTopics by remember { mutableStateOf(TopicsStore.getTopics(context)) }
+    var newTopic by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -274,6 +275,28 @@ private fun EditFeedDialog(
                                 },
                                 label = { Text(option) },
                             )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = newTopic,
+                            onValueChange = { newTopic = it },
+                            label = { Text(stringResource(R.string.new_topic_label)) },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                        )
+                        TextButton(
+                            onClick = {
+                                availableTopics = TopicsStore.addTopic(context, newTopic)
+                                selectedTopics = selectedTopics + newTopic.trim()
+                                newTopic = ""
+                            },
+                            enabled = newTopic.isNotBlank(),
+                        ) {
+                            Text(stringResource(R.string.add_term_button))
                         }
                     }
                 }

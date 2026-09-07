@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPresetsStore
 import com.carstenkeller.rssnewfeed.data.notifications.NotificationPreferences
+import com.carstenkeller.rssnewfeed.data.searchterms.SearchTermsStore
 import com.carstenkeller.rssnewfeed.data.topics.TopicsStore
 
 @Composable
@@ -37,8 +38,10 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
     var watchedTopics by remember { mutableStateOf(NotificationPreferences.getWatchedTopics(context)) }
     var watchedPresetIds by remember { mutableStateOf(NotificationPreferences.getWatchedPresetIds(context)) }
+    var watchedSearchTerms by remember { mutableStateOf(NotificationPreferences.getWatchedSearchTerms(context)) }
     val presets = remember { FilterPresetsStore.getAll(context) }
     val topics = remember { TopicsStore.getTopics(context) }
+    val searchTerms = remember { SearchTermsStore.getTerms(context) }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -76,6 +79,31 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
                             },
                         )
                         Text(topic)
+                    }
+                }
+
+                if (searchTerms.isNotEmpty()) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Text(
+                        stringResource(R.string.notification_search_terms_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    searchTerms.forEach { term ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Checkbox(
+                                checked = term in watchedSearchTerms,
+                                onCheckedChange = { checked ->
+                                    val updated = if (checked) watchedSearchTerms + term else watchedSearchTerms - term
+                                    watchedSearchTerms = updated
+                                    NotificationPreferences.setWatchedSearchTerms(context, updated)
+                                    if (checked) requestPermissionIfNeeded()
+                                },
+                            )
+                            Text(term)
+                        }
                     }
                 }
 

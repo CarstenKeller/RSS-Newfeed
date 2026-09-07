@@ -15,6 +15,7 @@ import com.carstenkeller.rssnewfeed.data.notifications.NotificationPreferences
 import com.carstenkeller.rssnewfeed.data.repository.FeedRepository
 import com.carstenkeller.rssnewfeed.data.repository.NewArticleInfo
 import com.carstenkeller.rssnewfeed.domain.PresetMatching
+import com.carstenkeller.rssnewfeed.domain.SearchTermMatching
 import com.carstenkeller.rssnewfeed.domain.TopicMatching
 import java.util.concurrent.TimeUnit
 
@@ -24,26 +25,28 @@ class FeedRefreshWorker(context: Context, params: WorkerParameters) : CoroutineW
         val repository = FeedRepository(db.feedDao(), db.articleDao())
         return try {
             val newArticles = repository.refreshAll()
-            notifyIfMatchingWatchedTopicsOrPresets(newArticles)
+            notifyIfMatching(newArticles)
             Result.success()
         } catch (e: Exception) {
             Result.retry()
         }
     }
 
-    private fun notifyIfMatchingWatchedTopicsOrPresets(newArticles: List<NewArticleInfo>) {
+    private fun notifyIfMatching(newArticles: List<NewArticleInfo>) {
         val watchedTopics = NotificationPreferences.getWatchedTopics(applicationContext)
+        val watchedSearchTerms = NotificationPreferences.getWatchedSearchTerms(applicationContext)
         val watchedPresetIds = NotificationPreferences.getWatchedPresetIds(applicationContext)
         val watchedPresets = if (watchedPresetIds.isEmpty()) {
             emptyList()
         } else {
             FilterPresetsStore.getAll(applicationContext).filter { it.id in watchedPresetIds }
         }
-        if (watchedTopics.isEmpty() && watchedPresets.isEmpty()) return
+        if (watchedTopics.isEmpty() && watchedSearchTerms.isEmpty() && watchedPresets.isEmpty()) return
 
         val matches = newArticles.filter { article ->
-            (watchedTopics.isNotEmpty() &&
-                TopicMatching.matches(article.feedTopicTags, article.categories, article.title, article.summary, watchedTopics)) ||
+            (watchedTopics.isNotEmpty() && TopicMatching.matches(article.feedTopicTags, watchedTopics)) ||
+                (watchedSearchTerms.isNotEmpty() &&
+                    SearchTermMatching.matchesAny(watchedSearchTerms, article.title, article.summary, article.categories)) ||
                 watchedPresets.any { preset ->
                     PresetMatching.matches(
                         preset = preset,
@@ -57,7 +60,8 @@ class FeedRefreshWorker(context: Context, params: WorkerParameters) : CoroutineW
                 }
         }
         if (matches.isNotEmpty()) {
-            NewArticlesNotifier.notify(applicationContext, matches.size, matches.first().title)
+            val singleArticleId = if (matches.size == 1) matches.first().id else null
+            NewArticlesNotifier.notify(applicationContext, matches.size, matches.first().title, singleArticleId)
         }
     }
 

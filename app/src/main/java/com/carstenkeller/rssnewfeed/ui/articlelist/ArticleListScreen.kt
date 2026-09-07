@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.ManageSearch
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.RssFeed
@@ -94,6 +95,7 @@ fun ArticleListScreen(
     onOpenArticle: (Long) -> Unit,
     onOpenFeedManagement: () -> Unit,
     onOpenTopicManagement: () -> Unit,
+    onOpenSearchTermManagement: () -> Unit,
     onOpenInfo: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -153,6 +155,7 @@ fun ArticleListScreen(
                                         onNotifications = { notificationSettingsOpen = true },
                                         onManageFeeds = onOpenFeedManagement,
                                         onManageTopics = onOpenTopicManagement,
+                                        onManageSearchTerms = onOpenSearchTermManagement,
                                         onAppearance = { appearanceDialogOpen = true },
                                         onLanguage = { languageDialogOpen = true },
                                         onInfo = onOpenInfo,
@@ -245,6 +248,8 @@ fun ArticleListScreen(
             onClearFeeds = viewModel::clearFeedFilter,
             onToggleIncludedTopic = viewModel::toggleIncludedTopic,
             onToggleExcludedTopic = viewModel::toggleExcludedTopic,
+            onToggleIncludedSearchTerm = viewModel::toggleIncludedSearchTerm,
+            onToggleExcludedSearchTerm = viewModel::toggleExcludedSearchTerm,
             onSelectLanguage = viewModel::setLanguageFilter,
             onSetDateRange = viewModel::setDateRange,
             onSelectSourceLinkFilter = viewModel::setSourceLinkFilter,
@@ -287,6 +292,7 @@ private fun MainMenu(
     onNotifications: () -> Unit,
     onManageFeeds: () -> Unit,
     onManageTopics: () -> Unit,
+    onManageSearchTerms: () -> Unit,
     onAppearance: () -> Unit,
     onLanguage: () -> Unit,
     onInfo: () -> Unit,
@@ -322,6 +328,11 @@ private fun MainMenu(
             text = { Text(stringResource(R.string.menu_manage_topics)) },
             leadingIcon = { Icon(Icons.Filled.Label, contentDescription = null) },
             onClick = { onDismiss(); onManageTopics() },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.menu_manage_search_terms)) },
+            leadingIcon = { Icon(Icons.Filled.ManageSearch, contentDescription = null) },
+            onClick = { onDismiss(); onManageSearchTerms() },
         )
         HorizontalDivider()
         DropdownMenuItem(

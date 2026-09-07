@@ -270,6 +270,35 @@ Stand Build 12: umgesetzt, noch nicht auf dem Gerät getestet.
       Jetzt ein reiner Icon-Button mit Tooltip-Text, analog zu den
       OPML-Import-/Export-Buttons.
 
+## Iteration 10 – Themen vs. Suchbegriffe sauber getrennt
+
+Stand Build 13: umgesetzt, noch nicht auf dem Gerät getestet. Ergebnis einer
+Diskussion zum Themen-Konzept: `<category>`-Tags in RSS-Feeds sind genauso
+unstandardisiertes Freitext wie Artikeltext (keine verbindliche Liste, weder
+sprach- noch branchenübergreifend) – eine Sonderbehandlung von Kategorien
+gegenüber normalem Text war deshalb nicht gerechtfertigt.
+
+- [x] **Themen** bedeuten jetzt ausschließlich die manuelle Feed-Zuordnung
+      (Feed-Verwaltung) – keine Text- oder Kategorie-Heuristik mehr. Die
+      bisherige deutsche Stichwortliste (TopicMatching) wurde entfernt.
+- [x] **Neu: Suchbegriffe** – frei editierbare Liste (eigener Menüpunkt
+      "Suchbegriffe verwalten"), die in Titel, Zusammenfassung UND
+      Kategorie-Tags gemeinsam gesucht wird (z. B. "Trump"). Nutzbar zum
+      Einschließen UND Ausschließen im Filter, direkt anlegbar auch im
+      Filter-Sheet selbst.
+- [x] Themen können jetzt auch direkt beim Bearbeiten eines Feeds spontan neu
+      angelegt werden (nicht mehr nur über "Themen verwalten").
+- [x] Filter-Favoriten speichern jetzt auch Suchbegriffe (ein-/ausschließend)
+      mit – differenziertere Favoriten möglich.
+- [x] Themen-Benachrichtigungen können jetzt zusätzlich an Suchbegriffe
+      gekoppelt werden (drittes Kriterium neben Themen und Filter-Favoriten).
+- [x] Bugfix: Tippen auf eine Benachrichtigung öffnete die App nicht gezielt.
+      Ursache: Der beim Einfügen neu vergebene Datenbank-Schlüssel eines
+      Artikels ging beim Zurückgeben aus der Speicherfunktion verloren
+      (Room ändert das Entity-Objekt nicht automatisch). Jetzt öffnet ein Tap
+      bei genau einem neuen Treffer direkt den betreffenden Artikel, bei
+      mehreren Treffern die Übersicht.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

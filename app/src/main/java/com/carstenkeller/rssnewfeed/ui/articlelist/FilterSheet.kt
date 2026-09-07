@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.carstenkeller.rssnewfeed.R
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
+import com.carstenkeller.rssnewfeed.data.searchterms.SearchTermsStore
 import com.carstenkeller.rssnewfeed.data.topics.TopicsStore
 import java.time.Instant
 import java.time.ZoneId
@@ -57,6 +58,8 @@ fun FilterSheet(
     onClearFeeds: () -> Unit,
     onToggleIncludedTopic: (String) -> Unit,
     onToggleExcludedTopic: (String) -> Unit,
+    onToggleIncludedSearchTerm: (String) -> Unit,
+    onToggleExcludedSearchTerm: (String) -> Unit,
     onSelectLanguage: (String?) -> Unit,
     onSetDateRange: (Long?, Long?) -> Unit,
     onSelectSourceLinkFilter: (SourceLinkFilter) -> Unit,
@@ -65,9 +68,12 @@ fun FilterSheet(
     onSavePreset: (String) -> Unit,
     onDeletePreset: (String) -> Unit,
 ) {
+    val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState()
     val languages = state.feeds.mapNotNull { it.language }.distinct().sorted()
     var saveDialogOpen by remember { mutableStateOf(false) }
+    var addSearchTermDialogOpen by remember { mutableStateOf(false) }
+    var searchTerms by remember { mutableStateOf(SearchTermsStore.getTerms(context)) }
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(
@@ -125,6 +131,31 @@ fun FilterSheet(
                 selected = state.filter.excludedTopics,
                 onToggle = onToggleExcludedTopic,
             )
+
+            SectionLabel(stringResource(R.string.section_search_terms_include))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                searchTerms.forEach { term ->
+                    FilterChip(
+                        selected = term in state.filter.includedSearchTerms,
+                        onClick = { onToggleIncludedSearchTerm(term) },
+                        label = { Text(term) },
+                    )
+                }
+                TextButton(onClick = { addSearchTermDialogOpen = true }) { Text(stringResource(R.string.add_term_button)) }
+            }
+
+            if (searchTerms.isNotEmpty()) {
+                SectionLabel(stringResource(R.string.section_search_terms_exclude))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    searchTerms.forEach { term ->
+                        FilterChip(
+                            selected = term in state.filter.excludedSearchTerms,
+                            onClick = { onToggleExcludedSearchTerm(term) },
+                            label = { Text(term) },
+                        )
+                    }
+                }
+            }
 
             if (languages.isNotEmpty()) {
                 SectionLabel(stringResource(R.string.section_language))
@@ -189,6 +220,17 @@ fun FilterSheet(
             },
         )
     }
+
+    if (addSearchTermDialogOpen) {
+        AddSearchTermDialog(
+            onDismiss = { addSearchTermDialogOpen = false },
+            onConfirm = { term ->
+                searchTerms = SearchTermsStore.addTerm(context, term)
+                onToggleIncludedSearchTerm(term)
+                addSearchTermDialogOpen = false
+            },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -229,6 +271,31 @@ private fun SavePresetDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit)
         confirmButton = {
             TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim()) }) {
                 Text(stringResource(R.string.action_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+@Composable
+private fun AddSearchTermDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var term by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.add_search_term_dialog_title)) },
+        text = {
+            OutlinedTextField(
+                value = term,
+                onValueChange = { term = it },
+                label = { Text(stringResource(R.string.search_term_label)) },
+                singleLine = true,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { if (term.isNotBlank()) onConfirm(term.trim()) }) {
+                Text(stringResource(R.string.action_add))
             }
         },
         dismissButton = {

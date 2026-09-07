@@ -11,8 +11,10 @@ import kotlinx.coroutines.flow.Flow
 
 data class OpmlImportResult(val added: Int, val skipped: Int, val failed: Int)
 
-/** Minimal info about a newly-inserted article, enough to check it against watched topics/presets. */
+/** Minimal info about a newly-inserted article, enough to check it against watched topics/presets
+ * and, for a single match, to deep-link the notification straight to that article. */
 data class NewArticleInfo(
+    val id: Long,
     val title: String,
     val summary: String,
     val categories: String,
@@ -91,7 +93,7 @@ class FeedRepository(
             val parsed = fetcher.fetchAndParse(feed.url)
             val inserted = storeItems(feed.id, parsed.items)
             feedDao.update(feed.copy(lastFetchedAt = System.currentTimeMillis(), lastFetchError = null))
-            inserted.map { NewArticleInfo(it.title, it.summary, it.categories, feed.id, feed.topicTags, feed.language) }
+            inserted.map { NewArticleInfo(it.id, it.title, it.summary, it.categories, feed.id, feed.topicTags, feed.language) }
         } catch (e: Exception) {
             feedDao.update(feed.copy(lastFetchError = e.message ?: "Unbekannter Fehler"))
             emptyList()
@@ -119,7 +121,10 @@ class FeedRepository(
             )
         }
         val ids = articleDao.insertAll(entities)
-        return entities.zip(ids).filter { (_, id) -> id != -1L }.map { (entity, _) -> entity }
+        // Room's @Insert doesn't mutate the entity's own id field, so without re-attaching
+        // the generated id here, every NewArticleInfo built from this would carry id=0 -
+        // that's the bug behind notifications not deep-linking to the right article.
+        return entities.zip(ids).filter { (_, id) -> id != -1L }.map { (entity, id) -> entity.copy(id = id) }
     }
 
     suspend fun markRead(articleId: Long) = articleDao.markRead(articleId)

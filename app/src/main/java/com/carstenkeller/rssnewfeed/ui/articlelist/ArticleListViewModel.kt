@@ -8,6 +8,7 @@ import com.carstenkeller.rssnewfeed.data.db.FeedEntity
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPreset
 import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPresetsStore
 import com.carstenkeller.rssnewfeed.data.repository.FeedRepository
+import com.carstenkeller.rssnewfeed.domain.SearchTermMatching
 import com.carstenkeller.rssnewfeed.domain.TopicMatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +29,8 @@ data class ArticleFilterState(
     val showRead: Boolean = false,
     val includedTopics: Set<String> = emptySet(),
     val excludedTopics: Set<String> = emptySet(),
+    val includedSearchTerms: Set<String> = emptySet(),
+    val excludedSearchTerms: Set<String> = emptySet(),
     val language: String? = null,
     val dateFromMillis: Long? = null,
     val dateToMillis: Long? = null,
@@ -35,7 +38,8 @@ data class ArticleFilterState(
 ) {
     val isDefault: Boolean
         get() = feedIds.isEmpty() && !showRead && includedTopics.isEmpty() &&
-            excludedTopics.isEmpty() && language == null && dateFromMillis == null &&
+            excludedTopics.isEmpty() && includedSearchTerms.isEmpty() && excludedSearchTerms.isEmpty() &&
+            language == null && dateFromMillis == null &&
             dateToMillis == null && sourceLinkFilter == SourceLinkFilter.ALLE
 }
 
@@ -84,8 +88,10 @@ class ArticleListViewModel(
                     it.isRead == filter.showRead
                 }
             }
-            .filter { filter.includedTopics.isEmpty() || matchesAnyTopic(it, filter.includedTopics) }
-            .filter { filter.excludedTopics.isEmpty() || !matchesAnyTopic(it, filter.excludedTopics) }
+            .filter { filter.includedTopics.isEmpty() || TopicMatching.matches(it.publisherTopicTags, filter.includedTopics) }
+            .filter { filter.excludedTopics.isEmpty() || !TopicMatching.matches(it.publisherTopicTags, filter.excludedTopics) }
+            .filter { filter.includedSearchTerms.isEmpty() || matchesAnySearchTerm(it, filter.includedSearchTerms) }
+            .filter { filter.excludedSearchTerms.isEmpty() || !matchesAnySearchTerm(it, filter.excludedSearchTerms) }
             .filter { filter.language == null || it.publisherLanguage == filter.language }
             .filter { filter.dateFromMillis == null || it.publishedAt >= filter.dateFromMillis }
             .filter { filter.dateToMillis == null || it.publishedAt <= filter.dateToMillis }
@@ -117,13 +123,8 @@ class ArticleListViewModel(
         refresh()
     }
 
-    private fun matchesAnyTopic(item: ArticleListItem, topics: Set<String>): Boolean = TopicMatching.matches(
-        feedTopicTags = item.publisherTopicTags,
-        categoriesCsv = item.categories,
-        title = item.title,
-        summary = item.summary,
-        watchedTopics = topics,
-    )
+    private fun matchesAnySearchTerm(item: ArticleListItem, terms: Set<String>): Boolean =
+        SearchTermMatching.matchesAny(terms, item.title, item.summary, item.categories)
 
     fun refresh() {
         viewModelScope.launch {
@@ -176,6 +177,20 @@ class ArticleListViewModel(
         )
     }
 
+    fun toggleIncludedSearchTerm(term: String) {
+        val current = filterState.value.includedSearchTerms
+        filterState.value = filterState.value.copy(
+            includedSearchTerms = if (term in current) current - term else current + term,
+        )
+    }
+
+    fun toggleExcludedSearchTerm(term: String) {
+        val current = filterState.value.excludedSearchTerms
+        filterState.value = filterState.value.copy(
+            excludedSearchTerms = if (term in current) current - term else current + term,
+        )
+    }
+
     fun setLanguageFilter(language: String?) {
         filterState.value = filterState.value.copy(language = language)
     }
@@ -200,17 +215,21 @@ class ArticleListViewModel(
             feedIds = current.feedIds,
             includedTopics = current.includedTopics,
             excludedTopics = current.excludedTopics,
+            includedSearchTerms = current.includedSearchTerms,
+            excludedSearchTerms = current.excludedSearchTerms,
             language = current.language,
         )
         presets.value = FilterPresetsStore.getAll(appContext)
     }
 
-    /** Applies a preset's topic/publisher/language selection; read state and date range are untouched. */
+    /** Applies a preset's topic/publisher/search-term/language selection; read state and date range are untouched. */
     fun applyPreset(preset: FilterPreset) {
         filterState.value = filterState.value.copy(
             feedIds = preset.feedIds,
             includedTopics = preset.includedTopics,
             excludedTopics = preset.excludedTopics,
+            includedSearchTerms = preset.includedSearchTerms,
+            excludedSearchTerms = preset.excludedSearchTerms,
             language = preset.language,
         )
     }

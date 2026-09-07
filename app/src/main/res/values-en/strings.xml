@@ -36,8 +36,16 @@
     <string name="toggle_show_read">Show read</string>
     <string name="scroll_to_top">Scroll to top</string>
     <string name="menu_manage_topics">Manage topics</string>
-    <string name="topics_hint">These topics are offered when tagging feeds, filtering, and setting up notifications. Add your own — e.g. “Cars” alongside “Auto” if you read both German- and English-language feeds.</string>
+    <string name="topics_hint">You assign topics to feeds manually (Manage feeds) — they then show up when filtering and setting up notifications. For content-based matching (e.g. a word in the article text), use "Manage search terms" instead.</string>
     <string name="topic_name_label">Topic name</string>
+    <string name="new_topic_label">New topic</string>
+    <string name="menu_manage_search_terms">Manage search terms</string>
+    <string name="search_terms_hint">Search terms are matched against an article\'s title, summary, and category tags (e.g. "Trump") - independent of feed tagging. Usable in filters and notifications.</string>
+    <string name="search_term_label">Search term</string>
+    <string name="section_search_terms_include">Search terms: must contain (empty = any)</string>
+    <string name="section_search_terms_exclude">Search terms: exclude</string>
+    <string name="add_search_term_dialog_title">Add search term</string>
+    <string name="add_term_button">+ Add</string>
 
     <!-- Article list empty states -->
     <string name="empty_no_feeds">No feeds added yet. Tap the menu icon above.</string>
@@ -90,6 +98,7 @@
     <!-- Notifications -->
     <string name="notification_topics_hint">Notify me about new articles on these topics (rough estimate based on feed topic/category/keywords):</string>
     <string name="notification_presets_hint">Or for new articles matching a saved filter favorite:</string>
+    <string name="notification_search_terms_hint">Or for new articles containing one of these search terms (title, summary, categories):</string>
 
     <!-- Appearance / language dialogs -->
     <string name="theme_light">Light</string>

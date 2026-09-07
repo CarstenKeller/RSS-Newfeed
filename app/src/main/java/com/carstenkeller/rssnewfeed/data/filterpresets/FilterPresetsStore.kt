@@ -21,13 +21,24 @@ object FilterPresetsStore {
         }
     }
 
-    fun add(context: Context, name: String, feedIds: Set<Long>, includedTopics: Set<String>, excludedTopics: Set<String>, language: String?) {
+    fun add(
+        context: Context,
+        name: String,
+        feedIds: Set<Long>,
+        includedTopics: Set<String>,
+        excludedTopics: Set<String>,
+        includedSearchTerms: Set<String>,
+        excludedSearchTerms: Set<String>,
+        language: String?,
+    ) {
         val preset = FilterPreset(
             id = UUID.randomUUID().toString(),
             name = name,
             feedIds = feedIds,
             includedTopics = includedTopics,
             excludedTopics = excludedTopics,
+            includedSearchTerms = includedSearchTerms,
+            excludedSearchTerms = excludedSearchTerms,
             language = language,
         )
         saveAll(context, getAll(context) + preset)
@@ -52,6 +63,8 @@ object FilterPresetsStore {
         put("feedIds", JSONArray(feedIds.toList()))
         put("includedTopics", JSONArray(includedTopics.toList()))
         put("excludedTopics", JSONArray(excludedTopics.toList()))
+        put("includedSearchTerms", JSONArray(includedSearchTerms.toList()))
+        put("excludedSearchTerms", JSONArray(excludedSearchTerms.toList()))
         put("language", language ?: JSONObject.NULL)
     }
 
@@ -66,6 +79,8 @@ object FilterPresetsStore {
         },
         includedTopics = getJSONArray("includedTopics").toStringSet(),
         excludedTopics = getJSONArray("excludedTopics").toStringSet(),
+        includedSearchTerms = if (has("includedSearchTerms")) getJSONArray("includedSearchTerms").toStringSet() else emptySet(),
+        excludedSearchTerms = if (has("excludedSearchTerms")) getJSONArray("excludedSearchTerms").toStringSet() else emptySet(),
         language = if (isNull("language")) null else getString("language"),
     )
 

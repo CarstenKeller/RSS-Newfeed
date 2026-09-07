@@ -36,8 +36,16 @@
     <string name="toggle_show_read">Gelesen anzeigen</string>
     <string name="scroll_to_top">Nach oben</string>
     <string name="menu_manage_topics">Themen verwalten</string>
-    <string name="topics_hint">Diese Themen stehen bei Feeds, Filtern und Benachrichtigungen zur Auswahl. Du kannst eigene ergänzen — z. B. zusätzlich zu „Auto" ein „Cars", wenn du sowohl deutsch- als auch englischsprachige Feeds liest.</string>
+    <string name="topics_hint">Themen ordnest du Feeds manuell zu (Feed-Verwaltung) — sie stehen dann bei Filtern und Benachrichtigungen zur Auswahl. Für inhaltsbasierte Suche (z. B. nach einem Wort im Artikeltext) nutze stattdessen „Suchbegriffe verwalten".</string>
     <string name="topic_name_label">Themenname</string>
+    <string name="new_topic_label">Neues Thema</string>
+    <string name="menu_manage_search_terms">Suchbegriffe verwalten</string>
+    <string name="search_terms_hint">Suchbegriffe werden in Titel, Zusammenfassung und Kategorie-Tags eines Artikels gesucht (z. B. „Trump") — unabhängig von der Feed-Zuordnung. Nutzbar in Filter und Benachrichtigungen.</string>
+    <string name="search_term_label">Suchbegriff</string>
+    <string name="section_search_terms_include">Suchbegriffe: muss enthalten sein (leer = egal)</string>
+    <string name="section_search_terms_exclude">Suchbegriffe: ausschließen</string>
+    <string name="add_search_term_dialog_title">Suchbegriff hinzufügen</string>
+    <string name="add_term_button">+ Hinzufügen</string>
 
     <!-- Article list empty states -->
     <string name="empty_no_feeds">Noch keine Feeds hinzugefügt. Tippe oben auf das Menü-Symbol.</string>
@@ -90,6 +98,7 @@
     <!-- Notifications -->
     <string name="notification_topics_hint">Bei neuen Artikeln zu diesen Themen benachrichtigen (grobe Einschätzung anhand Feed-Thema/Kategorie/Stichwörtern):</string>
     <string name="notification_presets_hint">Oder bei neuen Artikeln, die zu einem gespeicherten Filter-Favoriten passen:</string>
+    <string name="notification_search_terms_hint">Oder bei neuen Artikeln, die einen dieser Suchbegriffe enthalten (Titel, Zusammenfassung, Kategorien):</string>
 
     <!-- Appearance / language dialogs -->
     <string name="theme_light">Hell</string>
