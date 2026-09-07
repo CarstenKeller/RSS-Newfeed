@@ -11,12 +11,14 @@ import kotlinx.coroutines.flow.Flow
 
 data class OpmlImportResult(val added: Int, val skipped: Int, val failed: Int)
 
-/** Minimal info about a newly-inserted article, enough to check it against watched topics. */
+/** Minimal info about a newly-inserted article, enough to check it against watched topics/presets. */
 data class NewArticleInfo(
     val title: String,
     val summary: String,
     val categories: String,
+    val feedId: Long,
     val feedTopicTag: String?,
+    val feedLanguage: String?,
 )
 
 class FeedRepository(
@@ -89,7 +91,7 @@ class FeedRepository(
             val parsed = fetcher.fetchAndParse(feed.url)
             val inserted = storeItems(feed.id, parsed.items)
             feedDao.update(feed.copy(lastFetchedAt = System.currentTimeMillis(), lastFetchError = null))
-            inserted.map { NewArticleInfo(it.title, it.summary, it.categories, feed.topicTag) }
+            inserted.map { NewArticleInfo(it.title, it.summary, it.categories, feed.id, feed.topicTag, feed.language) }
         } catch (e: Exception) {
             feedDao.update(feed.copy(lastFetchError = e.message ?: "Unbekannter Fehler"))
             emptyList()

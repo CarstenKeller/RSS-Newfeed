@@ -8,5 +8,6 @@ val PREDEFINED_TOPICS = listOf(
     "Sport",
     "Kultur",
     "Wissenschaft & Technik",
+    "Auto",
     "Sonstiges",
 )

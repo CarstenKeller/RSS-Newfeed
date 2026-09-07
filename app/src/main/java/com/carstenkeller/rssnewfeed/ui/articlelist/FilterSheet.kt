@@ -56,6 +56,7 @@ fun FilterSheet(
     onToggleExcludedTopic: (String) -> Unit,
     onSelectLanguage: (String?) -> Unit,
     onSetDateRange: (Long?, Long?) -> Unit,
+    onSelectSourceLinkFilter: (SourceLinkFilter) -> Unit,
     onReset: () -> Unit,
     onApplyPreset: (FilterPreset) -> Unit,
     onSavePreset: (String) -> Unit,
@@ -147,6 +148,25 @@ fun FilterSheet(
                 toMillis = state.filter.dateToMillis,
                 onSetDateRange = onSetDateRange,
             )
+
+            SectionLabel("Quellart")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = state.filter.sourceLinkFilter == SourceLinkFilter.ALLE,
+                    onClick = { onSelectSourceLinkFilter(SourceLinkFilter.ALLE) },
+                    label = { Text("Alle") },
+                )
+                FilterChip(
+                    selected = state.filter.sourceLinkFilter == SourceLinkFilter.MIT_LINK,
+                    onClick = { onSelectSourceLinkFilter(SourceLinkFilter.MIT_LINK) },
+                    label = { Text("Mit Link zur Quelle") },
+                )
+                FilterChip(
+                    selected = state.filter.sourceLinkFilter == SourceLinkFilter.NUR_KURZNACHRICHT,
+                    onClick = { onSelectSourceLinkFilter(SourceLinkFilter.NUR_KURZNACHRICHT) },
+                    label = { Text("Nur Kurznachricht") },
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),

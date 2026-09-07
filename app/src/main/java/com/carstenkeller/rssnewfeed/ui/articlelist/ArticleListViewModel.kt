@@ -18,6 +18,9 @@ import kotlinx.coroutines.launch
 
 enum class SearchScope { ALLE, UNGELESEN, GELESEN }
 
+/** Whether an article links out to a full original article, or is a short, source-less note. */
+enum class SourceLinkFilter { ALLE, MIT_LINK, NUR_KURZNACHRICHT }
+
 data class ArticleFilterState(
     val feedIds: Set<Long> = emptySet(),
     // Everything new starts unread; unread is therefore the implicit default view and
@@ -28,10 +31,12 @@ data class ArticleFilterState(
     val language: String? = null,
     val dateFromMillis: Long? = null,
     val dateToMillis: Long? = null,
+    val sourceLinkFilter: SourceLinkFilter = SourceLinkFilter.ALLE,
 ) {
     val isDefault: Boolean
         get() = feedIds.isEmpty() && !showRead && includedTopics.isEmpty() &&
-            excludedTopics.isEmpty() && language == null && dateFromMillis == null && dateToMillis == null
+            excludedTopics.isEmpty() && language == null && dateFromMillis == null &&
+            dateToMillis == null && sourceLinkFilter == SourceLinkFilter.ALLE
 }
 
 data class ArticleListUiState(
@@ -84,6 +89,13 @@ class ArticleListViewModel(
             .filter { filter.language == null || it.publisherLanguage == filter.language }
             .filter { filter.dateFromMillis == null || it.publishedAt >= filter.dateFromMillis }
             .filter { filter.dateToMillis == null || it.publishedAt <= filter.dateToMillis }
+            .filter {
+                when (filter.sourceLinkFilter) {
+                    SourceLinkFilter.ALLE -> true
+                    SourceLinkFilter.MIT_LINK -> it.link.isNotBlank()
+                    SourceLinkFilter.NUR_KURZNACHRICHT -> it.link.isBlank()
+                }
+            }
             .filter {
                 query.isBlank() ||
                     it.title.contains(query, ignoreCase = true) ||
@@ -170,6 +182,10 @@ class ArticleListViewModel(
 
     fun setDateRange(fromMillis: Long?, toMillis: Long?) {
         filterState.value = filterState.value.copy(dateFromMillis = fromMillis, dateToMillis = toMillis)
+    }
+
+    fun setSourceLinkFilter(sourceLinkFilter: SourceLinkFilter) {
+        filterState.value = filterState.value.copy(sourceLinkFilter = sourceLinkFilter)
     }
 
     fun resetFilters() {

@@ -1,16 +1,19 @@
 package com.carstenkeller.rssnewfeed
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.carstenkeller.rssnewfeed.ui.navigation.AppNavHost
 import com.carstenkeller.rssnewfeed.ui.theme.AppearancePreferences
 import com.carstenkeller.rssnewfeed.ui.theme.RssNewfeedTheme
 
-class MainActivity : ComponentActivity() {
+// Must extend AppCompatActivity, not plain ComponentActivity - per Android's own docs,
+// AppCompatDelegate.setApplicationLocales() (the Sprache-Umschalter) silently does nothing
+// otherwise, even in a Compose-only app.
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

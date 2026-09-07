@@ -30,10 +30,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -79,25 +83,37 @@ fun FeedManagementScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { importLauncher.launch(arrayOf("*/*")) }) {
-                        Icon(Icons.Filled.FileUpload, contentDescription = "OPML importieren")
-                    }
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            val opml = viewModel.buildOpmlString()
-                            val dir = File(context.cacheDir, "opml").apply { mkdirs() }
-                            val file = File(dir, "rss-newsfeed-feeds.opml")
-                            file.writeText(opml)
-                            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                            val intent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/x-opml+xml"
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(Intent.createChooser(intent, "Feeds exportieren"))
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        tooltip = { PlainTooltip { Text("Feedliste aus OPML-Datei importieren") } },
+                        state = rememberTooltipState(),
+                    ) {
+                        IconButton(onClick = { importLauncher.launch(arrayOf("*/*")) }) {
+                            Icon(Icons.Filled.FileUpload, contentDescription = "OPML importieren")
                         }
-                    }) {
-                        Icon(Icons.Filled.FileDownload, contentDescription = "OPML exportieren")
+                    }
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        tooltip = { PlainTooltip { Text("Feedliste als OPML-Datei exportieren/teilen") } },
+                        state = rememberTooltipState(),
+                    ) {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                val opml = viewModel.buildOpmlString()
+                                val dir = File(context.cacheDir, "opml").apply { mkdirs() }
+                                val file = File(dir, "rss-newsfeed-feeds.opml")
+                                file.writeText(opml)
+                                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/x-opml+xml"
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(Intent.createChooser(intent, "Feeds exportieren"))
+                            }
+                        }) {
+                            Icon(Icons.Filled.FileDownload, contentDescription = "OPML exportieren")
+                        }
                     }
                 },
             )

@@ -172,6 +172,34 @@ Stand Build 8: umgesetzt, noch nicht auf dem Gerät getestet.
       gemeinsamen Karte zusammengefasst, damit der Zusammenhang optisch
       erkennbar ist; das zusätzliche Label "Durchsuchen:" entfällt dadurch.
 
+## Iteration 7 – Feedback nach Build 8
+
+Stand Build 9: umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] **Bugfix (echter Funktionsfehler, nicht nur fehlende Übersetzung)**: Die
+      Sprachumschaltung (Deutsch/English) hat gar nicht gegriffen. Ursache laut
+      offizieller Android-Dokumentation: `AppCompatDelegate.setApplicationLocales()`
+      funktioniert nur, wenn die Activity von `AppCompatActivity` erbt – die App
+      nutzte aber die einfache `ComponentActivity`. Jetzt behoben. Die bereits in
+      Build 8 genannte Einschränkung gilt weiterhin: es ändert sich nur die
+      interne Locale, die Bildschirmtexte bleiben bis zur String-Auslagerung
+      Deutsch.
+- [x] Bugfix: Die blaue Kopfzeile hatte keine feste Breite und schrumpfte im
+      Such-Modus auf die Breite des Titeltextes zusammen (dadurch wirkten
+      Kopfzeile und Suchbereich uneinheitlich/verunglückt). Jetzt spannt die
+      Kopfzeile immer die volle Breite auf.
+- [x] Tooltips an den beiden Icon-Buttons in der Feed-Verwaltung (Import/Export
+      der OPML-Datei), da diese ohne Beschriftung unklar waren.
+- [x] Neues Thema "Auto" ergänzt (inkl. Stichwortliste für die
+      Keyword-Zusatzklassifikation) – automatisch auch bei den
+      Themen-Benachrichtigungen wählbar.
+- [x] Themen-Benachrichtigungen können jetzt zusätzlich an einen gespeicherten
+      Filter-Favoriten gekoppelt werden (nicht nur an einzelne Themen) –
+      Herausgeber/Themen/Sprache des Favoriten werden gegen neue Artikel geprüft.
+- [x] Neuer Filter "Quellart": Alle / Mit Link zur Quelle / Nur Kurznachricht –
+      filtert danach, ob ein Artikel einen Link zum Original-Artikel mitliefert
+      oder nicht.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

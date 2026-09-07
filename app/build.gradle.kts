@@ -15,8 +15,8 @@ android {
         applicationId = "com.carstenkeller.rssnewfeed"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "0.8.0-menu-appearance"
+        versionCode = 9
+        versionName = "0.9.0-language-fix-notifications"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "BUILD_NUMBER", "$versionCode")

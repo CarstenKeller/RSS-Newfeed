@@ -104,6 +104,7 @@ fun ArticleListScreen(
         topBar = {
             Column {
                 Surface(
+                    modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ) {
@@ -226,6 +227,7 @@ fun ArticleListScreen(
             onToggleExcludedTopic = viewModel::toggleExcludedTopic,
             onSelectLanguage = viewModel::setLanguageFilter,
             onSetDateRange = viewModel::setDateRange,
+            onSelectSourceLinkFilter = viewModel::setSourceLinkFilter,
             onReset = viewModel::resetFilters,
             onApplyPreset = viewModel::applyPreset,
             onSavePreset = viewModel::savePreset,
@@ -326,7 +328,7 @@ private fun SearchPanel(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,

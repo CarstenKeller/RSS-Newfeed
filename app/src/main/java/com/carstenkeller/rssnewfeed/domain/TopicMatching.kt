@@ -32,6 +32,11 @@ private val TOPIC_KEYWORDS: Map<String, List<String>> = mapOf(
         "studie", "forscher", "wissenschaft", "technologie", "künstliche intelligenz", " ki ",
         "raumfahrt", "klima", "forschung", "smartphone", "software", "roboter",
     ),
+    "Auto" to listOf(
+        "auto", "autos", "pkw", "fahrzeug", "elektroauto", "e-auto", "verbrenner",
+        "hersteller", "modell", "suv", "hybrid", "tesla", "vw", "volkswagen", "bmw",
+        "mercedes", "audi", "porsche", "test drive", "motor", "reifen", "ladesäule",
+    ),
 )
 
 object TopicMatching {

@@ -7,8 +7,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -20,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.carstenkeller.rssnewfeed.data.filterpresets.FilterPresetsStore
 import com.carstenkeller.rssnewfeed.data.notifications.NotificationPreferences
 import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
 
@@ -27,8 +31,16 @@ import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
 fun NotificationSettingsDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
     var watchedTopics by remember { mutableStateOf(NotificationPreferences.getWatchedTopics(context)) }
+    var watchedPresetIds by remember { mutableStateOf(NotificationPreferences.getWatchedPresetIds(context)) }
+    val presets = remember { FilterPresetsStore.getAll(context) }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    fun requestPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -51,12 +63,35 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
                                 val updated = if (checked) watchedTopics + topic else watchedTopics - topic
                                 watchedTopics = updated
                                 NotificationPreferences.setWatchedTopics(context, updated)
-                                if (checked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                }
+                                if (checked) requestPermissionIfNeeded()
                             },
                         )
                         Text(topic)
+                    }
+                }
+
+                if (presets.isNotEmpty()) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Text(
+                        "Oder bei neuen Artikeln, die zu einem gespeicherten Filter-Favoriten passen:",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    presets.forEach { preset ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Checkbox(
+                                checked = preset.id in watchedPresetIds,
+                                onCheckedChange = { checked ->
+                                    val updated = if (checked) watchedPresetIds + preset.id else watchedPresetIds - preset.id
+                                    watchedPresetIds = updated
+                                    NotificationPreferences.setWatchedPresetIds(context, updated)
+                                    if (checked) requestPermissionIfNeeded()
+                                },
+                            )
+                            Text(preset.name)
+                        }
                     }
                 }
             }
