@@ -7,7 +7,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
@@ -46,7 +49,11 @@ fun NotificationSettingsDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("Themen-Benachrichtigungen") },
         text = {
-            Column {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 420.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
                 Text(
                     "Bei neuen Artikeln zu diesen Themen benachrichtigen (grobe " +
                         "Einschätzung anhand Feed-Thema/Kategorie/Stichwörtern):",

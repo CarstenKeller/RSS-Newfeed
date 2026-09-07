@@ -200,6 +200,20 @@ Stand Build 9: umgesetzt, noch nicht auf dem Gerät getestet.
       filtert danach, ob ein Artikel einen Link zum Original-Artikel mitliefert
       oder nicht.
 
+## Iteration 7b – Nachbesserung Build 9
+
+Stand Build 10: umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] Bugfix: Der Themen-Benachrichtigungen-Dialog hatte keinen Scroll-Bereich.
+      Bei genügend Themen (jetzt inkl. "Auto") plus Filter-Favoriten lief der
+      Inhalt über die verfügbare Dialoghöhe hinaus und wurde abgeschnitten –
+      dadurch waren die Filter-Favoriten praktisch unsichtbar/nicht auswählbar,
+      sichtbar nur als abgeschnittenes Checkbox-Fragment unter "Sonstiges".
+      Der Dialog-Inhalt ist jetzt vertikal scrollbar.
+- Sprachumschaltung bestätigt: Der Umschalter selbst funktioniert jetzt
+  (Locale wechselt), wie in Build 9 bereits angekündigt bleiben die
+  Bildschirmtexte aber bis zur noch ausstehenden String-Auslagerung Deutsch.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar
