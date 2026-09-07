@@ -32,6 +32,7 @@ data class ArticleListUiState(
     val articles: List<ArticleListItem> = emptyList(),
     val feeds: List<FeedEntity> = emptyList(),
     val filter: ArticleFilterState = ArticleFilterState(),
+    val searchQuery: String = "",
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
 )
@@ -39,6 +40,7 @@ data class ArticleListUiState(
 class ArticleListViewModel(private val repository: FeedRepository) : ViewModel() {
 
     private val filterState = MutableStateFlow(ArticleFilterState())
+    private val searchQuery = MutableStateFlow("")
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
 
@@ -46,8 +48,9 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
         repository.visibleArticles,
         repository.feeds,
         filterState,
+        searchQuery,
         isRefreshing,
-    ) { articles, feeds, filter, refreshing ->
+    ) { articles, feeds, filter, query, refreshing ->
         val filtered = articles
             .filter { filter.feedId == null || it.feedId == filter.feedId }
             .filter { it.isRead == filter.showRead }
@@ -56,10 +59,16 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
             .filter { filter.language == null || it.publisherLanguage == filter.language }
             .filter { filter.dateFromMillis == null || it.publishedAt >= filter.dateFromMillis }
             .filter { filter.dateToMillis == null || it.publishedAt <= filter.dateToMillis }
+            .filter {
+                query.isBlank() ||
+                    it.title.contains(query, ignoreCase = true) ||
+                    it.summary.contains(query, ignoreCase = true)
+            }
         ArticleListUiState(
             articles = filtered,
             feeds = feeds,
             filter = filter,
+            searchQuery = query,
             isRefreshing = refreshing,
             errorMessage = errorMessage.value,
         )
@@ -97,6 +106,10 @@ class ArticleListViewModel(private val repository: FeedRepository) : ViewModel()
 
     fun setShowRead(showRead: Boolean) {
         filterState.value = filterState.value.copy(showRead = showRead)
+    }
+
+    fun setSearchQuery(query: String) {
+        searchQuery.value = query
     }
 
     fun toggleIncludedTopic(topic: String) {

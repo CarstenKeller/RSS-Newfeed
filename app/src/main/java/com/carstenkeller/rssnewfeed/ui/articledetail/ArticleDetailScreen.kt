@@ -2,6 +2,7 @@ package com.carstenkeller.rssnewfeed.ui.articledetail
 
 import android.net.Uri
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,13 +60,23 @@ fun ArticleDetailScreen(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 factory = { ctx ->
                     WebView(ctx).apply {
-                        loadDataWithBaseURL(null, wrapHtml(current.contentHtml), "text/html", "UTF-8", null)
-                        setOnScrollChangeListener { view, _, scrollY, _, _ ->
-                            val webView = view as WebView
-                            val contentHeightPx = (webView.contentHeight * webView.scale).toInt()
-                            val reachedEnd = scrollY + webView.height >= contentHeightPx - 24
-                            if (reachedEnd) viewModel.markAsRead()
+                        // evaluateJavascript() below is a no-op without this.
+                        settings.javaScriptEnabled = true
+                        // WebView.getContentHeight()/getScale() are documented as unreliable for
+                        // this purpose (scale in particular can silently stay 1.0 regardless of
+                        // actual zoom), which meant "reached the end" almost never triggered.
+                        // Asking the page itself, purely in CSS-pixel space, is exact.
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageFinished(view: WebView, url: String?) {
+                                // Short articles that fit on one screen never fire a scroll
+                                // event at all, so also check right after the page settles.
+                                checkScrolledToBottom(view, viewModel)
+                            }
                         }
+                        setOnScrollChangeListener { view, _, _, _, _ ->
+                            checkScrolledToBottom(view as WebView, viewModel)
+                        }
+                        loadDataWithBaseURL(null, wrapHtml(current.contentHtml), "text/html", "UTF-8", null)
                     }
                 },
             )
@@ -88,6 +99,19 @@ fun ArticleDetailScreen(
                 }
             }
         }
+    }
+}
+
+private fun checkScrolledToBottom(webView: WebView, viewModel: ArticleDetailViewModel) {
+    val script = """
+        (function() {
+            var doc = document.documentElement;
+            var scrollHeight = Math.max(doc.scrollHeight, document.body.scrollHeight);
+            return (window.scrollY + window.innerHeight) >= (scrollHeight - 24);
+        })();
+    """.trimIndent()
+    webView.evaluateJavascript(script) { result ->
+        if (result == "true") viewModel.markAsRead()
     }
 }
 

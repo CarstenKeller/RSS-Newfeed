@@ -1,5 +1,8 @@
 package com.carstenkeller.rssnewfeed.ui.feedmanagement
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -34,11 +39,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import com.carstenkeller.rssnewfeed.data.db.FeedEntity
 import com.carstenkeller.rssnewfeed.domain.PREDEFINED_TOPICS
+import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +59,14 @@ fun FeedManagementScreen(
     val state by viewModel.uiState.collectAsState()
     var newFeedUrl by remember { mutableStateOf("") }
     var feedToEdit by remember { mutableStateOf<FeedEntity?>(null) }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            context.contentResolver.openInputStream(it)?.let { stream -> viewModel.importOpml(stream) }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -58,6 +76,28 @@ fun FeedManagementScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { importLauncher.launch(arrayOf("*/*")) }) {
+                        Icon(Icons.Filled.FileUpload, contentDescription = "OPML importieren")
+                    }
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            val opml = viewModel.buildOpmlString()
+                            val dir = File(context.cacheDir, "opml").apply { mkdirs() }
+                            val file = File(dir, "rss-newsfeed-feeds.opml")
+                            file.writeText(opml)
+                            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/x-opml+xml"
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Feeds exportieren"))
+                        }
+                    }) {
+                        Icon(Icons.Filled.FileDownload, contentDescription = "OPML exportieren")
                     }
                 },
             )
@@ -94,6 +134,13 @@ fun FeedManagementScreen(
                 Text(
                     text = it,
                     color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
+            state.infoMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }

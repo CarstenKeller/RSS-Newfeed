@@ -16,12 +16,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RssFeed
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +31,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -63,30 +66,55 @@ fun ArticleListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var filterSheetOpen by remember { mutableStateOf(false) }
+    var searchExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("RSS Newsfeed") },
+                    title = {
+                        if (searchExpanded) {
+                            OutlinedTextField(
+                                value = state.searchQuery,
+                                onValueChange = viewModel::setSearchQuery,
+                                placeholder = { Text("Suche in Titel/Zusammenfassung") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        } else {
+                            Text("RSS Newsfeed")
+                        }
+                    },
                     colors = com.carstenkeller.rssnewfeed.ui.theme.brandedTopAppBarColors(),
                     actions = {
-                        IconButton(onClick = { filterSheetOpen = true }) {
-                            Icon(
-                                Icons.Filled.FilterList,
-                                contentDescription = "Filter",
-                                tint = if (state.filter.isDefault) {
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.error
-                                },
-                            )
-                        }
-                        IconButton(onClick = onOpenFeedManagement) {
-                            Icon(Icons.Filled.RssFeed, contentDescription = "Feeds verwalten")
-                        }
-                        IconButton(onClick = onOpenInfo) {
-                            Icon(Icons.Filled.Info, contentDescription = "App-Info")
+                        if (searchExpanded) {
+                            IconButton(onClick = {
+                                searchExpanded = false
+                                viewModel.setSearchQuery("")
+                            }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Suche schließen")
+                            }
+                        } else {
+                            IconButton(onClick = { searchExpanded = true }) {
+                                Icon(Icons.Filled.Search, contentDescription = "Suchen")
+                            }
+                            IconButton(onClick = { filterSheetOpen = true }) {
+                                Icon(
+                                    Icons.Filled.FilterList,
+                                    contentDescription = "Filter",
+                                    tint = if (state.filter.isDefault) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.error
+                                    },
+                                )
+                            }
+                            IconButton(onClick = onOpenFeedManagement) {
+                                Icon(Icons.Filled.RssFeed, contentDescription = "Feeds verwalten")
+                            }
+                            IconButton(onClick = onOpenInfo) {
+                                Icon(Icons.Filled.Info, contentDescription = "App-Info")
+                            }
                         }
                     },
                 )
@@ -109,6 +137,7 @@ fun ArticleListScreen(
                     Text(
                         when {
                             state.feeds.isEmpty() -> "Noch keine Feeds hinzugefügt. Tippe oben auf das Feed-Symbol."
+                            state.searchQuery.isNotBlank() -> "Keine Treffer für \"${state.searchQuery}\"."
                             state.filter.showRead -> "Noch keine gelesenen Artikel."
                             else -> "Alles gelesen — keine ungelesenen Artikel."
                         },
@@ -155,7 +184,7 @@ private fun ReadFilterRow(showRead: Boolean, onToggle: (Boolean) -> Unit) {
         FilterChip(
             selected = showRead,
             onClick = { onToggle(!showRead) },
-            label = { Text("Gelesen anzeigen") },
+            label = { Text(if (showRead) "Ungelesen anzeigen" else "Gelesen anzeigen") },
         )
     }
 }

@@ -61,8 +61,11 @@ versionsübergreifend gespeichert. App-Name korrigiert zu "RSS Newsfeed"
 
 ## Iteration 2 – Themen- und Filtersystem
 
-Stand Build 3: implementiert, noch nicht von dir auf dem Gerät getestet –
-bitte insbesondere die Themen-Zuweisung und das Filter-Sheet ausprobieren.
+Stand Build 4: von dir getestet, funktioniert gut. Zwei kleine Bugs behoben:
+Filter-Chip-Beschriftung wechselte nicht zwischen "Gelesen"/"Ungelesen
+anzeigen", und die WebView-Erkennung "Artikelende erreicht" nutzte die
+unzuverlässige `WebView.getScale()`-API und löste dadurch fast nie aus –
+jetzt eine robuste, rein JavaScript-basierte Prüfung.
 
 - [x] Themen-Tag pro Feed (manuell zuweisbar: Politik, Weltgeschehen,
       Wirtschaft, Sport, Kultur, Wissenschaft & Technik, Sonstiges) –
@@ -79,11 +82,20 @@ bitte insbesondere die Themen-Zuweisung und das Filter-Sheet ausprobieren.
 
 ## Iteration 3 – Ausbaustufen (optional, nach Bedarf)
 
-- [ ] Volltextsuche über Titel/Zusammenfassung
-- [ ] Keyword-basierte Zusatzklassifikation einzelner Artikel
-- [ ] OPML-Export/-Import der Feed-Liste
-- [ ] Benachrichtigungen bei neuen Artikeln zu ausgewählten Themen
-- [ ] Offline-Lesen / Bild-Caching-Feinschliff
+Stand Build 4: Zwei Punkte umgesetzt (Suche, OPML), noch nicht auf dem Gerät
+getestet. Die restlichen drei bewusst zurückgestellt, da komplexer/spekulativer
+(Benachrichtigungen brauchen einen Laufzeit-Berechtigungsdialog und eine neue
+"Themen beobachten"-Einstellung; Keyword-Klassifikation und Offline-Feinschliff
+haben unklaren Mehrwert ohne konkreten Bedarf) – sag Bescheid, falls einer davon
+doch Priorität haben soll.
+
+- [x] Volltextsuche über Titel/Zusammenfassung (Suchsymbol oben in der Leiste)
+- [ ] Keyword-basierte Zusatzklassifikation einzelner Artikel (zurückgestellt)
+- [x] OPML-Export/-Import der Feed-Liste (Symbole in der Feed-Verwaltung;
+      Export teilt eine .opml-Datei, Import liest eine ausgewählte Datei ein
+      und überspringt bereits vorhandene Feed-URLs)
+- [ ] Benachrichtigungen bei neuen Artikeln zu ausgewählten Themen (zurückgestellt)
+- [ ] Offline-Lesen / Bild-Caching-Feinschliff (zurückgestellt)
 
 ## Build & Auslieferung
 
