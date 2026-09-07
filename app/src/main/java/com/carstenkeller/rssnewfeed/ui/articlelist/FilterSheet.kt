@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.carstenkeller.rssnewfeed.ui.articlelist
 
 import androidx.compose.foundation.clickable
