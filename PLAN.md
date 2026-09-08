@@ -299,6 +299,23 @@ gegenüber normalem Text war deshalb nicht gerechtfertigt.
       bei genau einem neuen Treffer direkt den betreffenden Artikel, bei
       mehreren Treffern die Übersicht.
 
+## Iteration 11 – Filter-Favoriten: aktiver Zustand + Nach-oben-Button
+
+Stand Build 14: umgesetzt, noch nicht auf dem Gerät getestet.
+
+- [x] Ein angewendeter Filter-Favorit ist jetzt auf einen Blick erkennbar:
+      der entsprechende Chip erscheint sowohl in der Schnellauswahlzeile
+      über der Artikelliste als auch im Filter-Sheet selbst als "ausgewählt"
+      (gefüllte Chip-Darstellung), sobald der aktuelle Filter exakt diesem
+      Favoriten entspricht.
+- [x] Tippt man auf den bereits aktiven Favoriten erneut, wird der Filter
+      zurückgesetzt (alle ungelesenen Artikel, ungefiltert) statt ihn erneut
+      anzuwenden.
+- [x] Der "Nach oben"-Button steht jetzt rechtsbündig am äußeren Rand der
+      Kopfzeile (statt direkt neben dem "Gelesen anzeigen"-Chip) und zeigt
+      ein um 90° gedrehtes Vorspulen-Symbol (Doppelpfeilspitze), sodass die
+      Pfeile nach oben weisen.
+
 ## Build & Auslieferung
 
 - Jede Iteration erhält eine fortlaufende Buildnummer (versionCode), sichtbar

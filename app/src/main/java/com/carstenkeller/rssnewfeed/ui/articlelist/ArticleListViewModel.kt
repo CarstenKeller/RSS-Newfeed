@@ -41,6 +41,16 @@ data class ArticleFilterState(
             excludedTopics.isEmpty() && includedSearchTerms.isEmpty() && excludedSearchTerms.isEmpty() &&
             language == null && dateFromMillis == null &&
             dateToMillis == null && sourceLinkFilter == SourceLinkFilter.ALLE
+
+    /** Whether this filter is currently exactly what applying this preset would produce -
+     * used to show a preset as "active" and to let tapping it again toggle back to reset. */
+    fun matchesPreset(preset: FilterPreset): Boolean =
+        feedIds == preset.feedIds &&
+            includedTopics == preset.includedTopics &&
+            excludedTopics == preset.excludedTopics &&
+            includedSearchTerms == preset.includedSearchTerms &&
+            excludedSearchTerms == preset.excludedSearchTerms &&
+            language == preset.language
 }
 
 data class ArticleListUiState(

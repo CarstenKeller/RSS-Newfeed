@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -25,9 +27,9 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.ManageSearch
@@ -68,6 +70,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -173,13 +176,18 @@ fun ArticleListScreen(
                                     },
                                 )
                                 if (showScrollToTop) {
+                                    Spacer(Modifier.weight(1f))
                                     TooltipBox(
                                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                                         tooltip = { PlainTooltip { Text(stringResource(R.string.scroll_to_top)) } },
                                         state = rememberTooltipState(),
                                     ) {
                                         IconButton(onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } }) {
-                                            Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.scroll_to_top))
+                                            Icon(
+                                                Icons.Filled.FastForward,
+                                                contentDescription = stringResource(R.string.scroll_to_top),
+                                                modifier = Modifier.rotate(-90f),
+                                            )
                                         }
                                     }
                                 }
@@ -199,7 +207,12 @@ fun ArticleListScreen(
                         },
                     )
                 } else if (state.presets.isNotEmpty()) {
-                    PresetQuickRow(presets = state.presets, onApply = viewModel::applyPreset)
+                    PresetQuickRow(
+                        filter = state.filter,
+                        presets = state.presets,
+                        onApply = viewModel::applyPreset,
+                        onReset = viewModel::resetFilters,
+                    )
                 }
             }
         },
@@ -426,8 +439,10 @@ private fun SearchScopeRow(scope: SearchScope, onSelect: (SearchScope) -> Unit) 
 
 @Composable
 private fun PresetQuickRow(
+    filter: ArticleFilterState,
     presets: List<FilterPreset>,
     onApply: (FilterPreset) -> Unit,
+    onReset: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -438,7 +453,12 @@ private fun PresetQuickRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         presets.forEach { preset ->
-            AssistChip(onClick = { onApply(preset) }, label = { Text(preset.name) })
+            val isActive = filter.matchesPreset(preset)
+            FilterChip(
+                selected = isActive,
+                onClick = { if (isActive) onReset() else onApply(preset) },
+                label = { Text(preset.name) },
+            )
         }
     }
 }

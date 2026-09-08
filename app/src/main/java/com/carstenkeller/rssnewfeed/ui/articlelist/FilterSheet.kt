@@ -90,7 +90,9 @@ fun FilterSheet(
                 state.presets.forEach { preset ->
                     PresetChip(
                         preset = preset,
+                        isActive = state.filter.matchesPreset(preset),
                         onApply = { onApplyPreset(preset) },
+                        onReset = onReset,
                         onDelete = { onDeletePreset(preset.id) },
                     )
                 }
@@ -235,10 +237,10 @@ fun FilterSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PresetChip(preset: FilterPreset, onApply: () -> Unit, onDelete: () -> Unit) {
+private fun PresetChip(preset: FilterPreset, isActive: Boolean, onApply: () -> Unit, onReset: () -> Unit, onDelete: () -> Unit) {
     InputChip(
-        selected = false,
-        onClick = onApply,
+        selected = isActive,
+        onClick = { if (isActive) onReset() else onApply() },
         label = { Text(preset.name) },
         trailingIcon = {
             // A nested clickable intercepts the tap before it reaches the chip's own
